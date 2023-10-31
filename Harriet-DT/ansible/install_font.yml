@@ -1,0 +1,26 @@
+---
+- name: Check if font exists
+  find:
+    paths: "{{ font_dir }}"
+    patterns: "{{ font }}*Nerd*Font*.*tf"
+  register: font_files
+
+- when: font_files.matched == 0
+  block:
+    - name: Download font
+      get_url:
+        url: https://github.com/ryanoasis/nerd-fonts/releases/latest/download/{{ font }}.zip
+        dest: /tmp/{{ font }}.zip
+        use_proxy: false
+      register: font_download
+
+    - name: Install font
+      unarchive:
+        src: "{{ font_download.dest }}"
+        dest: "{{ font_dir }}"
+        remote_src: true
+
+    - name: Remove font download
+      file:
+        path: "{{ font_download.dest }}"
+        state: absent

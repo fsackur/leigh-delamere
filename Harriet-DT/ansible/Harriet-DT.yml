@@ -1,0 +1,127 @@
+---
+- name: Base build
+  hosts: all
+  become: true
+  tasks:
+    - name: Add Microsoft GPG apt key
+      apt_key:
+        url: https://packages.microsoft.com/keys/microsoft.asc
+        state: present
+
+    - name: Add Powershell repository
+      apt_repository:
+        repo: deb https://packages.microsoft.com/ubuntu/22.04/prod jammy main
+        state: present
+
+    - name: Add VS Code repository
+      apt_repository:
+        repo: deb https://packages.microsoft.com/repos/vscode stable main
+        state: present
+
+    - name: Install base packages
+      apt:
+        pkg:
+          - nohang
+          - openssh-server
+          - x11vnc
+          - kitty
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+          - dirmngr
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - build-essential
+          - procps
+          - file
+          - git
+          - powershell
+          - code
+          - fontconfig
+        state: latest
+        update_cache: true
+        autoclean: true
+
+    - name: Enable ssh service
+      service:
+        name: ssh
+        enabled: true
+        state: started
+
+    - name: Copy x11vnc service conf
+      copy:
+        src: x11vnc.service
+        dest: /etc/systemd/system/x11vnc.service
+
+    - name: Test VNC password file
+      stat:
+        path: /root/.vnc/passwd
+      register: vnc_passwd
+
+    - name: VNC password not created
+      fail:
+        msg: "Create VNC password file with `sudo x11vnc --storepasswd`"
+      when: not vnc_passwd.stat.exists
+
+    - name: Enable x11vnc service
+      service:
+        name: x11vnc
+        enabled: true
+        state: started
+
+    - name: Enable nohang-desktop service
+      service:
+        name: nohang-desktop
+        enabled: true
+        state: started
+
+    - name: Test for Starship
+      shell: which starship
+      register: starship
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Install Starship
+      shell: curl -fsLS starship.rs/install.sh | sh -s -- -y
+      args:
+        warn: false
+      when: starship.rc != 0
+
+    - name: Test for Chezmoi
+      shell: which chezmoi
+      register: chezmoi
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Install Chezmoi
+      shell: curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+      args:
+        warn: false
+      when: chezmoi.rc != 0
+      register: chezmoi_install
+
+    - name: Declare required fonts
+      set_fact:
+        font_dir: /usr/local/share/fonts
+        fonts:
+          - Hack
+          - FiraCode
+          - Meslo
+
+    - name: Ensure fonts directory
+      file:
+        path: "{{ font_dir }}"
+        state: directory
+
+    - include_tasks: install_font.yml
+      loop: "{{ fonts }}"
+      loop_control:
+        loop_var: font
+
+    - name: Init chezmoi
+      shell: chezmoi init fsackur/dotfiles --branch chezmoi --ssh --recurse-submodules=false --apply --verbose
+      become: false
+      when: ansible_user == "freddie" and chezmoi_install.changed
