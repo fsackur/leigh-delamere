@@ -1,17 +1,9 @@
 ---
-- name: Base build
+- name: Harriet-DT
   hosts: all
   become: true
   tasks:
-    - name: Add Microsoft GPG apt key
-      apt_key:
-        url: https://packages.microsoft.com/keys/microsoft.asc
-        state: present
-
-    - name: Add Powershell repository
-      apt_repository:
-        repo: deb https://packages.microsoft.com/ubuntu/22.04/prod jammy main
-        state: present
+    - include_tasks: ../common/base.yml
 
     - name: Add VS Code repository
       apt_repository:
@@ -25,20 +17,7 @@
           - openssh-server
           - x11vnc
           - kitty
-          - apt-transport-https
-          - ca-certificates
-          - curl
-          - gnupg
-          - software-properties-common
           - dirmngr
-          - python3-pip
-          - virtualenv
-          - python3-setuptools
-          - build-essential
-          - procps
-          - file
-          - git
-          - powershell
           - code
           - fontconfig
         state: latest
