@@ -1,0 +1,16 @@
+---
+# This file describes the network interfaces available on your system
+# For more information, see netplan(5).
+#
+# Deployed with ansible
+#
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{ ansible_default_ipv4.interface }}:
+      dhcp4: {{ network.dhcp4 }}
+      addresses: {{ network.addresses | to_yaml }}
+      gateway4: {{ network.gateway4 | to_yaml }}
+      nameservers:
+        addresses: {{ network.nameservers.addresses | to_yaml }}
