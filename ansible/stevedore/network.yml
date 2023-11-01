@@ -1,0 +1,32 @@
+---
+- name: Find obsolete netplan files
+  find:
+    paths: /etc/netplan
+    file_type: file
+    excludes:
+      - ansible_netplan.yaml
+  register: found_files
+
+- name: Delete obsolete netplan files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ found_files.files }}"
+
+- name: Copy new netplan
+  template:
+    src: netplan.yml.j2
+    dest: /etc/netplan/ansible_netplan.yaml   # N.B. Extension must be .yaml
+  register: netplan
+
+- name: Apply netplan
+  command: netplan apply
+  async: 45
+  poll: 5
+  when: netplan.changed
+
+- name: Allow single-label DNS lookup
+  lineinfile:
+    path: /etc/systemd/resolved.conf
+    regexp: "ResolveUnicastSingleLabel="
+    line: "ResolveUnicastSingleLabel=yes"

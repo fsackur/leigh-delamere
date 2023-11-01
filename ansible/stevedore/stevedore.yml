@@ -2,5 +2,23 @@
 - name: Stevedore
   hosts: all
   become: true
+  vars:
+    network:
+      dhcp4: false
+      addresses:
+        - 10.9.9.3/24
+        - 10.9.9.9/24
+        - 10.9.9.53/24
+      gateway4: 10.9.9.1
+      nameservers:
+        addresses:
+          - 10.9.9.1
+      search_suffix: leigh.delamere
+    host_addresses:
+      unifi: 10.9.9.9
+      pihole: 10.9.9.53
+
   tasks:
+    - include_tasks: network.yml
+
     - include_tasks: ../common/base.yml
