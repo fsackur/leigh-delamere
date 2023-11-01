@@ -2,7 +2,8 @@
 
 dir=$(dirname $0)
 
-playbook="${1:-$(hostname)}.yml"
+hostname=$(hostname)
+playbook="${1:-$hostname/$hostname.yml}"
 if [ "$playbook" == "" ]; then
     echo "Must specify a playbook"
     exit 1
