@@ -1,0 +1,39 @@
+---
+- name: Add Docker GPG apt Key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+
+- name: Add Docker Repository
+  apt_repository:
+    repo: deb https://download.docker.com/linux/ubuntu mantic stable
+    state: present
+
+- name: Install Docker
+  apt:
+    pkg:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+      - python3-docker
+    state: latest
+    update_cache: true
+    autoclean: true
+
+- name: Add "{{ ansible_user }}" to docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: true
+
+- name: Add alias for dockerhub registry
+  lineinfile:
+    path: /etc/containers/registries.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.insertafter }}"
+  loop:
+    - { regexp: '^\[registries.search\]', line: '[registries.search]', insertafter: '$' }
+    - { regexp: '^registries *=', line: 'registries = ["docker.io"]', insertafter: '^\[registries.search\]' }
