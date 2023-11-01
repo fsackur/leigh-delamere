@@ -1,0 +1,18 @@
+[Unit]
+Description=Pihole
+Requires=docker.service multi-user.target
+After=docker.service network-online.target dhcpd.service
+
+[Service]
+Restart=always
+RemainAfterExit=yes
+StateDirectory=pihole
+ConfigurationDirectory=pihole
+LoadCredential=pihole_passwd:/root/.secrets/pihole_passwd
+WorkingDirectory=%E/pihole
+ExecStart=docker compose up --remove-orphans
+ExecStop=docker compose down
+ExecReload=docker compose exec pihole pihole restartdns
+
+[Install]
+WantedBy=multi-user.target

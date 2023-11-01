@@ -1,0 +1,71 @@
+---
+- name: Generate pihole password file
+  shell:
+    cmd: tr -dc 'A-Za-z0-9@#$%&_+=' </dev/urandom 2>/dev/null | head -c32 > /root/.secrets/pihole_passwd
+    creates: /root/.secrets/pihole_passwd
+
+- name: Set pihole password file permissions
+  file:
+    path: /root/.secrets/pihole_passwd
+    state: file
+    mode: 0600
+
+- name: Create pihole config directories
+  file:
+    path: /etc/pihole/{{ item }}
+    state: directory
+  loop:
+    - dnsmasq.d
+    - pihole
+    - lighttpd/conf-enabled
+
+- name: Copy pihole web config
+  template:
+    src: pihole.99-admin-redirect.conf
+    dest: /etc/pihole/lighttpd/conf-enabled/99-admin-redirect.conf
+
+- name: Copy pihole docker-compose
+  template:
+    src: pihole.docker-compose.yml.j2
+    dest: /etc/pihole/docker-compose.yml
+
+- name: Copy pihole service conf
+  template:
+    src: pihole.service
+    dest: /etc/systemd/system/pihole.service
+
+- name: Create pihole state directory
+  file:
+    path: /var/lib/pihole/
+    state: directory
+
+- name: Test profile
+  stat:
+    path: /var/lib/pihole/root/.bash_history
+  register: bash_history
+
+- when: not bash_history.stat.exists
+  block:
+    - name: Copy profile
+      copy:
+        src: /etc/skel/
+        dest: /var/lib/pihole/root
+        mode: 0700
+
+    - name: Create bashrc motd
+      lineinfile:
+        path: /var/lib/pihole/root/.bashrc
+        line: echo -e "\033[31mHistory is saved on the host - do not leak secrets in the shell! \033[0m"
+        insertafter: $
+
+    - name: Touch bash history
+      file:
+        path: /var/lib/pihole/root/.bash_history
+        state: touch
+        mode: 0600
+
+- name: Enable pihole service
+  service:
+    name: pihole
+    enabled: true
+    state: started

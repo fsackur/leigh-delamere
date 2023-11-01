@@ -22,3 +22,21 @@
     - include_tasks: network.yml
 
     - include_tasks: ../common/base.yml
+
+    - name: Test docker binary
+      stat:
+        path: /usr/bin/docker
+      register: docker
+
+    - include_tasks: docker.yml
+      when: not docker.stat.exists
+
+    - name: Create .secrets directory
+      file:
+        path: /root/.secrets/
+        state: directory
+        mode: 0700
+        owner: root
+        group: root
+
+    - include_tasks: pihole.yml

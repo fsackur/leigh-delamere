@@ -1,0 +1,27 @@
+---
+version: "3.7"
+
+services:
+  pihole:
+    restart: always
+    container_name: pihole
+    image: pihole/pihole:latest
+    hostname: pihole
+    dns:
+      - 127.0.0.1
+    ports:
+      - "{{ host_addresses.pihole }}:53:53/tcp"
+      - "{{ host_addresses.pihole }}:53:53/udp"
+      - "{{ host_addresses.pihole }}:80:80"
+      - "{{ host_addresses.pihole }}:443:443"
+    volumes:
+      # variables populated by systemd. If running outside systemd, use equivalent folders in current dir
+      - ${CONFIGURATION_DIRECTORY:-./etc/pihole}/pihole/:/etc/pihole/
+      - ${CONFIGURATION_DIRECTORY:-./etc/pihole}/dnsmasq.d/:/etc/dnsmasq.d/
+      - ${CONFIGURATION_DIRECTORY:-./etc/pihole}/lighttpd/conf-enabled/99-admin-redirect.conf:/etc/lighttpd/conf-enabled/99-admin-redirect.conf:ro
+      - ${CREDENTIALS_DIRECTORY:-./root/.secrets}/pihole_passwd:/pihole_passwd:ro
+      - ${STATE_DIRECTORY:-./var/lib/pihole}/root:/root
+    environment:
+      TZ: "Europe/London"
+      PIHOLE_DNS_: 208.67.222.222;208.67.220.220;2620:119:35::35;2620:119:53::53
+      WEBPASSWORD_FILE: /pihole_passwd
