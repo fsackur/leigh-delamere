@@ -1,0 +1,6 @@
+---
+- name: Stevedore
+  hosts: all
+  become: true
+  tasks:
+    - include_tasks: ../common/base.yml

@@ -1,0 +1,63 @@
+---
+- name: Add Microsoft GPG apt key
+  apt_key:
+    url: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Add Powershell repository
+  apt_repository:
+    repo: deb https://packages.microsoft.com/ubuntu/22.04/prod jammy main
+    state: present
+
+- name: Install base packages
+  apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - software-properties-common
+      - python3-pip
+      - virtualenv
+      - python3-setuptools
+      - build-essential
+      - procps
+      - file
+      - git
+      - powershell
+    state: latest
+    update_cache: true
+    autoclean: true
+
+- name: Enable ssh service
+  service:
+    name: ssh
+    enabled: true
+    state: started
+
+- name: Install Powershell modules
+  shell:
+    cmd: pwsh -c "Install-Module -Force -Scope CurrentUser -AcceptLicense posh-git, Metadata, Configuration, poke, Pester, Microsoft.PowerShell.UnixTabCompletion"
+    creates: /home/{{ ansible_user }}/.local/share/powershell/Modules/posh-git/
+
+- name: Set user shell to pwsh
+  user:
+    name: "{{ ansible_user }}"
+    shell: /usr/bin/pwsh
+
+- name: Install Starship
+  shell:
+    cmd: curl -fsLS starship.rs/install.sh | sh -s -- -y
+    creates: /usr/local/bin/starship
+
+- name: Install Chezmoi
+  shell:
+    cmd: curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+    creates: /usr/local/bin/chezmoi
+
+- name: Init chezmoi
+  shell:
+    cmd: chezmoi init fsackur/dotfiles --branch chezmoi --ssh --recurse-submodules=false --apply --verbose
+    creates: /home/{{ ansible_user }}/.local/share/chezmoi/
+  become: false
+  when: ansible_user == "freddie"
