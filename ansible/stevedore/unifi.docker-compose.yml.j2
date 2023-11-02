@@ -1,0 +1,71 @@
+---
+version: "3.7"
+
+# If the APs do not appear in the controller to be adopted, it's likely that
+# they can't reach the default set-inform address.
+# 1. Find the AP IP address from DHCP
+# 2. SSH as ubnt/ubnt:
+#     ssh -v -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa ubnt@10.1.1.125
+# 3. Update the set-inform address:
+#     set-inform http://unifi:8080/inform
+
+services:
+  unifi:
+    restart: always
+    container_name: unifi
+    depends_on:
+      - unifi-db
+    image: lscr.io/linuxserver/unifi-network-application:latest
+    hostname: unifi
+    ports:
+      - "{{ host_addresses.unifi }}:443:8443"
+      - "{{ host_addresses.unifi }}:8443:8443"
+      - "{{ host_addresses.unifi }}:8080:8080"
+      - "{{ host_addresses.unifi }}:3478:3478/udp"
+      - "{{ host_addresses.unifi }}:10001:10001/udp"
+      - "{{ host_addresses.unifi }}:1900:1900/udp"  # optional
+      - "{{ host_addresses.unifi }}:8843:8843"      # optional
+      - "{{ host_addresses.unifi }}:8880:8880"      # optional
+      - "{{ host_addresses.unifi }}:6789:6789"      # optional
+      - "{{ host_addresses.unifi }}:5514:5514/udp"  # optional
+    volumes:
+      # variables populated by systemd. If running outside systemd, use equivalent folders in current dir
+      - ${CONFIGURATION_DIRECTORY:-.}/unifi-entrypoint.sh:/unifi-entrypoint.sh:ro
+      - ${CONFIGURATION_DIRECTORY:-.}/config/:/config/
+      - ${CONFIGURATION_DIRECTORY:-.}/root/:/root/
+      - ${CREDENTIALS_DIRECTORY:-./root/.secrets}/unifi_db_passwd:/unifi_db_passwd:ro
+    environment:
+      TZ: "Europe/London"
+      MEM_LIMIT: 1024   # optional
+      MEM_STARTUP: 1024 # optional
+      MONGO_USER: unifi
+      MONGO_PASSWORD_FILE: /unifi_db_passwd
+      MONGO_HOST: unifi-db
+      MONGO_PORT: 27017
+      MONGO_DBNAME: unifi
+      MONGO_AUTHSOURCE: admin
+    entrypoint: /unifi-entrypoint.sh
+    networks:
+      - unifi
+
+  unifi-db:
+    restart: unless-stopped
+    image: mongo:4.4
+    container_name: unifi-db
+    hostname: unifi-db
+    volumes:
+      - ${CONFIGURATION_DIRECTORY:-.}/unifi-db-entrypoint.sh:/unifi-db-entrypoint.sh:ro
+      - ${CONFIGURATION_DIRECTORY:-.}/db:/data/db
+      - ${CONFIGURATION_DIRECTORY:-.}/configdb:/data/configdb
+      - ${CREDENTIALS_DIRECTORY:-./root/.secrets}/unifi_db_passwd:/unifi_db_passwd:ro
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: unifi
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /unifi_db_passwd
+    user: root
+    entrypoint: /unifi-db-entrypoint.sh
+    command: mongod
+    networks:
+      - unifi
+
+networks:
+  unifi:
