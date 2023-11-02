@@ -1,0 +1,29 @@
+---
+- name: Test profile
+  stat:
+    path: "{{ profile_path }}/.bash_history"
+  register: bash_history
+
+- when: not bash_history.stat.exists
+  block:
+    - name: Copy profile
+      copy:
+        src: /etc/skel/
+        dest: "{{ profile_path }}"
+        mode: 0700
+
+    - name: Create bashrc motd
+      lineinfile:
+        path: "{{ profile_path }}/.bashrc"
+        line: echo -e "\033[31mHistory is saved on the host - do not leak secrets in the shell! \033[0m"
+
+    - name: Alias ls
+      lineinfile:
+        path: "{{ profile_path }}/.bashrc"
+        line: alias ls="ls -Ahl"
+
+    - name: Touch bash history
+      file:
+        path: "{{ profile_path }}/.bash_history"
+        state: touch
+        mode: 0600

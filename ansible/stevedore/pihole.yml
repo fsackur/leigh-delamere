@@ -18,6 +18,7 @@
     - dnsmasq.d
     - pihole
     - lighttpd/conf-enabled
+    - root
 
 - name: Copy pihole web config
   template:
@@ -34,35 +35,9 @@
     src: pihole.service
     dest: /etc/systemd/system/pihole.service
 
-- name: Create pihole state directory
-  file:
-    path: /var/lib/pihole/
-    state: directory
-
-- name: Test profile
-  stat:
-    path: /var/lib/pihole/root/.bash_history
-  register: bash_history
-
-- when: not bash_history.stat.exists
-  block:
-    - name: Copy profile
-      copy:
-        src: /etc/skel/
-        dest: /var/lib/pihole/root
-        mode: 0700
-
-    - name: Create bashrc motd
-      lineinfile:
-        path: /var/lib/pihole/root/.bashrc
-        line: echo -e "\033[31mHistory is saved on the host - do not leak secrets in the shell! \033[0m"
-        insertafter: $
-
-    - name: Touch bash history
-      file:
-        path: /var/lib/pihole/root/.bash_history
-        state: touch
-        mode: 0600
+- include_tasks: container_user_profile.yml
+  vars:
+    profile_path: /etc/pihole/root/
 
 - name: Enable pihole service
   service:
