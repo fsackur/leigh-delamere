@@ -1,0 +1,16 @@
+[Unit]
+Description=Unifi
+Requires=docker.service multi-user.target
+After=docker.service network-online.target dhcpd.service
+
+[Service]
+Restart=always
+RemainAfterExit=yes
+ConfigurationDirectory=unifi
+WorkingDirectory=%E/unifi
+LoadCredential=unifi_db_passwd:/root/.secrets/unifi_db_passwd
+ExecStart=docker compose up --remove-orphans
+ExecStop=docker compose down
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,50 @@
+---
+- name: Generate unifi DB password file
+  shell:
+    cmd: tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c64 > /root/.secrets/unifi_db_passwd
+    creates: /root/.secrets/unifi_db_passwd
+
+- name: Set unifi DB password file permissions
+  file:
+    path: /root/.secrets/unifi_db_passwd
+    state: file
+    mode: 0600
+
+- name: Create unifi config directory
+  file:
+    path: /etc/unifi/{{ item }}
+    state: directory
+  loop:
+    - config
+    - db
+    - configdb
+    - root
+
+- name: Copy unifi docker-compose
+  template:
+    src: unifi.docker-compose.yml.j2
+    dest: /etc/unifi/docker-compose.yml
+
+- name: Copy entrypoints
+  copy:
+    src: "{{ item }}"
+    dest: /etc/unifi/{{ item }}
+    mode: 0755
+  loop:
+    - unifi-entrypoint.sh
+    - unifi-db-entrypoint.sh
+
+- name: Copy unifi service conf
+  template:
+    src: unifi.service
+    dest: /etc/systemd/system/unifi.service
+
+- include_tasks: container_user_profile.yml
+  vars:
+    profile_path: /etc/unifi/root/
+
+- name: Enable unifi service
+  service:
+    name: unifi
+    enabled: true
+    state: started

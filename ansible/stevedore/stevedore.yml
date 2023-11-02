@@ -40,3 +40,5 @@
         group: root
 
     - include_tasks: pihole.yml
+
+    - include_tasks: unifi.yml
