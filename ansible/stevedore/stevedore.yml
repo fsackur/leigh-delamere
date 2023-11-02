@@ -10,7 +10,6 @@
         - 10.9.9.9/24
         - 10.9.9.53/24
       gateway4: 10.9.9.1
-      cidr: 24
       nameservers:
         addresses:
           - 10.9.9.1
@@ -20,45 +19,26 @@
       pihole: 10.9.9.53
 
   tasks:
-    # - include_tasks: network.yml
+    - include_tasks: network.yml
 
-    # - include_tasks: ../common/base.yml
+    - include_tasks: ../common/base.yml
 
-    # - name: Test docker binary
-    #   stat:
-    #     path: /usr/bin/docker
-    #   register: docker
+    - name: Test docker binary
+      stat:
+        path: /usr/bin/docker
+      register: docker
 
-    # - include_tasks: docker.yml
-    #   when: not docker.stat.exists
+    - include_tasks: docker.yml
+      when: not docker.stat.exists
 
-    # - name: Create .secrets directory
-    #   file:
-    #     path: /root/.secrets/
-    #     state: directory
-    #     mode: 0700
-    #     owner: root
-    #     group: root
+    - name: Create .secrets directory
+      file:
+        path: /root/.secrets/
+        state: directory
+        mode: 0700
+        owner: root
+        group: root
 
-    # - include_tasks: pihole.yml
+    - include_tasks: pihole.yml
 
-    # - include_tasks: unifi.yml
-
-    # - name: set
-    #   set_fact:
-    #     # test: "{{ network.addresses | replace(network.cidr, '')  | replace('/', '') | to_yaml }}"
-    #     # test: "{{ network.addresses | to_yaml }}"
-    #     # test: "{{ network.addresses | ipaddr('address') }}"
-    #     # test: "{{ network.addresses | ansible.utils.ipaddr('net') }}"
-    #     test: "{{ network.addresses[0] | ipaddr(0) }}"
-
-
-
-    # - name: d
-    #   debug:
-    #     var: test
-
-    - name: Copy unifi docker-compose
-      template:
-        src: unifi.docker-compose.yml.j2
-        dest: /etc/unifi/docker-compose.yml
+    - include_tasks: unifi.yml
