@@ -45,8 +45,10 @@ services:
       MONGO_DBNAME: unifi
       MONGO_AUTHSOURCE: admin
     entrypoint: /unifi-entrypoint.sh
+    dns: "{{ network.nameservers.addresses[0] }}"
     networks:
-      - unifi
+      unifi:
+        ipv4_address: "{{ host_addresses.unifi }}"
 
   unifi-db:
     restart: unless-stopped
@@ -69,3 +71,7 @@ services:
 
 networks:
   unifi:
+    ipam:
+      config:
+        - subnet: "{{ network.addresses[0] | ansible.utils.ipaddr(0) }}"
+          gateway: "{{ network.gateway4 }}"
