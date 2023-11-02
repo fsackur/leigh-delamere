@@ -6,7 +6,6 @@ After=docker.service network-online.target dhcpd.service
 [Service]
 Restart=always
 RemainAfterExit=yes
-StateDirectory=pihole
 ConfigurationDirectory=pihole
 LoadCredential=pihole_passwd:/root/.secrets/pihole_passwd
 WorkingDirectory=%E/pihole
