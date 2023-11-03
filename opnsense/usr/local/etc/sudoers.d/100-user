@@ -1,0 +1,10 @@
+# Do not copy or edit directly - always use visudo!
+
+# I trust myself not to leak my ssh key
+# freddie ALL=(ALL:ALL) NOPASSWD: ALL
+
+# This is safer
+freddie ALL=(ALL:ALL) ALL
+
+# Let members of wheel use sudo
+%wheel ALL=(ALL:ALL) ALL
