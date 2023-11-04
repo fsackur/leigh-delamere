@@ -52,3 +52,23 @@
         method: system
       loop:
         - Zoom
+
+    - name: Get timeshift partition UUID
+      shell: lsblk -o NAME,LABEL,UUID | grep timeshift | awk '{print $NF}'
+      register: _timeshift_partition_uuid
+      failed_when:
+        _timeshift_partition_uuid.rc != 0 or
+        _timeshift_partition_uuid.stdout == "" or
+        _timeshift_partition_uuid.stdout_lines|length != 1
+
+    - name: _
+      set_fact:
+        timeshift_partition_uuid: "{{ _timeshift_partition_uuid.stdout }}"
+
+    - name: Copy timeshift config
+      template:
+        src: timeshift.json.j2
+        dest: /etc/timeshift/timeshift.json
+        owner: root
+        group: root
+        mode: 0644
