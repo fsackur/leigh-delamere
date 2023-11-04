@@ -4,7 +4,9 @@ After=multi-user.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/x11vnc -auth guess -forever -loop -noxdamage -repeat -rfbauth {{ vnc_hashed_passwd_path }} -rfbport 5900 -shared
+Restart=always
+RestartSec=2
+ExecStart=/usr/bin/x11vnc -auth guess -noxdamage -repeat -rfbauth {{ vnc_hashed_passwd_path }} -rfbport 5900 -shared
 
 [Install]
 WantedBy=multi-user.target
