@@ -24,9 +24,10 @@ fi
 
 ansible-playbook \
     $dir/$playbook \
-    -i "$(hostname)," \
-    -l "$(hostname)," \
+    -i "$hostname," \
+    -l "$hostname," \
     -c local \
     -u $(whoami) \
     ${ask_become_pass} \
+    -e "ansible_user_home=$HOME" \
     $@
