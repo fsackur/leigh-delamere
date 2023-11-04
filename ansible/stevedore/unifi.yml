@@ -1,14 +1,11 @@
 ---
-- name: Generate unifi DB password file
-  shell:
-    cmd: tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c64 > /root/.secrets/unifi_db_passwd
-    creates: /root/.secrets/unifi_db_passwd
-
-- name: Set unifi DB password file permissions
-  file:
+- name: Generate unifi DB password
+  include_tasks: ../common/generate_password.yml
+  vars:
+    purpose: unifi DB
     path: /root/.secrets/unifi_db_passwd
-    state: file
-    mode: 0600
+    charset: a-zA-Z0-9  # anything that looks like URL encoding causes issues with the connection string
+    length: 64
 
 - name: Create unifi config directory
   file:
