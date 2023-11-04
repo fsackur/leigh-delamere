@@ -5,6 +5,10 @@
   tasks:
     - include_tasks: ../common/base.yml
 
+    - include_tasks: ../common/vnc_server.yml
+
+    - include_tasks: ../common/fonts.yml
+
     - name: Add VS Code repository
       apt_repository:
         repo: deb https://packages.microsoft.com/repos/vscode stable main
@@ -14,8 +18,6 @@
       apt:
         pkg:
           - nohang
-          - openssh-server
-          - x11vnc
           - kitty
           - dirmngr
           - code
@@ -24,88 +26,8 @@
         update_cache: true
         autoclean: true
 
-    - name: Enable ssh service
-      service:
-        name: ssh
-        enabled: true
-        state: started
-
-    - name: Copy x11vnc service conf
-      copy:
-        src: x11vnc.service
-        dest: /etc/systemd/system/x11vnc.service
-
-    - name: Test VNC password file
-      stat:
-        path: /root/.vnc/passwd
-      register: vnc_passwd
-
-    - name: VNC password not created
-      fail:
-        msg: "Create VNC password file with `sudo x11vnc --storepasswd`"
-      when: not vnc_passwd.stat.exists
-
-    - name: Enable x11vnc service
-      service:
-        name: x11vnc
-        enabled: true
-        state: started
-
     - name: Enable nohang-desktop service
       service:
         name: nohang-desktop
         enabled: true
         state: started
-
-    - name: Install Powershell modules
-      shell:
-        cmd: pwsh -c "Install-Module -Force -Scope CurrentUser -AcceptLicense posh-git, Metadata, Configuration, poke, Pester, Microsoft.PowerShell.UnixTabCompletion"
-        creates: /home/{{ ansible_user }}/.local/share/powershell/Modules/posh-git/
-
-    - name: Test for Starship
-      shell: which starship
-      register: starship
-      ignore_errors: yes
-      changed_when: false
-
-    - name: Install Starship
-      shell: curl -fsLS starship.rs/install.sh | sh -s -- -y
-      args:
-        warn: false
-      when: starship.rc != 0
-
-    - name: Test for Chezmoi
-      shell: which chezmoi
-      register: chezmoi
-      ignore_errors: yes
-      changed_when: false
-
-    - name: Install Chezmoi
-      shell: curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
-      args:
-        warn: false
-      when: chezmoi.rc != 0
-      register: chezmoi_install
-
-    - name: Declare required fonts
-      set_fact:
-        font_dir: /usr/local/share/fonts
-        fonts:
-          - Hack
-          - FiraCode
-          - Meslo
-
-    - name: Ensure fonts directory
-      file:
-        path: "{{ font_dir }}"
-        state: directory
-
-    - include_tasks: install_font.yml
-      loop: "{{ fonts }}"
-      loop_control:
-        loop_var: font
-
-    - name: Init chezmoi
-      shell: chezmoi init fsackur/dotfiles --branch chezmoi --ssh --recurse-submodules=false --apply --verbose
-      become: false
-      when: ansible_user == "freddie" and chezmoi_install.changed

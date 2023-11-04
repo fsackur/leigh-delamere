@@ -12,6 +12,7 @@
 - name: Install base packages
   apt:
     pkg:
+      - openssh-server
       - apt-transport-https
       - ca-certificates
       - curl
@@ -44,6 +45,7 @@
   user:
     name: "{{ ansible_user }}"
     shell: /usr/bin/pwsh
+  when: ansible_user == "freddie"
 
 - name: Install Starship
   shell:
