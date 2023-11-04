@@ -1,4 +1,21 @@
 ---
+- name: Define ansible_user_home
+  when: ansible_user_home is not defined
+  run_once: true
+  block:
+    - name: _
+      shell: echo $HOME
+      register: _ansible_user_home
+      become: false
+      changed_when: false
+    - name: _
+      fail:
+        msg: "Failed to get HOME var for {{ ansible_user }}"
+      when: _ansible_user_home.stdout == ""
+    - name: _
+      set_fact:
+        ansible_user_home: "{{ _ansible_user_home.stdout }}"
+
 - name: Add Microsoft GPG apt key
   apt_key:
     url: https://packages.microsoft.com/keys/microsoft.asc
@@ -39,7 +56,8 @@
 - name: Install Powershell modules
   shell:
     cmd: pwsh -c "Install-Module -Force -Scope CurrentUser -AcceptLicense posh-git, Metadata, Configuration, poke, Pester, Microsoft.PowerShell.UnixTabCompletion"
-    creates: /home/{{ ansible_user }}/.local/share/powershell/Modules/posh-git/
+    creates: "{{ ansible_user_home }}/.local/share/powershell/Modules/posh-git/"
+  become: false
 
 - name: Set user shell to pwsh
   user:
@@ -60,6 +78,6 @@
 - name: Init chezmoi
   shell:
     cmd: chezmoi init fsackur/dotfiles --branch chezmoi --ssh --recurse-submodules=false --apply --verbose
-    creates: /home/{{ ansible_user }}/.local/share/chezmoi/
+    creates: "{{ ansible_user_home }}/.local/share/chezmoi/"
   become: false
   when: ansible_user == "freddie"
