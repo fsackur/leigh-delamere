@@ -31,3 +31,11 @@
         name: nohang-desktop
         enabled: true
         state: started
+
+    - name: Copy kitty config
+      copy:
+        src: kitty.conf
+        dest: "{{ ansible_user_home }}/.config/kitty/kitty.conf"
+        force: false
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
