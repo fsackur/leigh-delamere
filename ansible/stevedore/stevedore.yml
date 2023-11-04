@@ -19,6 +19,12 @@
       pihole: 10.9.9.53
 
   tasks:
+    - name: Install guest agent  # also needs to be enabled in proxmox
+      apt:
+        pkg: qemu-guest-agent
+        state: latest
+        autoclean: true
+
     - include_tasks: network.yml
 
     - include_tasks: ../common/base.yml
