@@ -39,3 +39,10 @@
         force: false
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
+
+    - name: Install flatpaks
+      flatpak:
+        name: "{{ item }}"
+        method: system
+      loop:
+        - Zoom
