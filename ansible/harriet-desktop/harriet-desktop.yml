@@ -27,6 +27,7 @@
           - dirmngr
           - code
           - fontconfig
+          - gparted
         state: latest
         update_cache: true
         autoclean: true
