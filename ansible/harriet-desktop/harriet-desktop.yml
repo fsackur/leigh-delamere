@@ -1,5 +1,5 @@
 ---
-- name: Harriet-DT
+- name: harriet-desktop
   hosts: all
   become: true
   tasks:
