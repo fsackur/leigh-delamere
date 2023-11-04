@@ -9,6 +9,11 @@
 
     - include_tasks: ../common/fonts.yml
 
+    - name: Assert that Freddie's home folder is encrypted  # Must be done interactively
+      include_tasks: ../common/check_home_folder_encryption.yml
+      vars:
+        user: freddie
+
     - name: Add VS Code repository
       apt_repository:
         repo: deb https://packages.microsoft.com/repos/vscode stable main
