@@ -102,3 +102,15 @@
           - sudo
           - nopasswdlogin
         append: yes
+
+    - name: Download Bookwright installer
+      get_url:
+        url: https://software.blurb.com/bookwright_v2/3.0.2/BookWright.exe
+        dest: /home/harriet/Downloads/BookWright.exe
+        mode: 0777
+
+    - name: Install Bookwright
+      shell:
+        cmd: wine /home/harriet/Downloads/BookWright.exe
+      when: ansible_connection == 'local' and ansible_user == 'harriet'  # unattended install not worth the effort
+      become: false
