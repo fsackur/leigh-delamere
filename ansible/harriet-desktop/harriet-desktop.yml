@@ -30,6 +30,9 @@
           - code
           - fontconfig
           - gparted
+          - wine
+          - wine32
+          - wine64
         state: latest
         update_cache: true
         autoclean: true
@@ -100,3 +103,9 @@
           - sudo
           - nopasswdlogin
         append: yes
+
+    - name: Fix wine not showing up in association list  # https://askubuntu.com/a/971547/1743668
+      file:
+        src: /usr/share/doc/wine/examples/wine.desktop
+        dest: /usr/share/applications/wine.desktop
+        state: link
