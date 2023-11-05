@@ -1,0 +1,19 @@
+# configured by ansible
+# - Freddie Sackur
+
+# Don't install from ubuntu kinetic (22.10)
+Package: *
+Pin: release n=kinetic
+Pin-Priority: -100
+
+# Install from ubuntu kinetic (22.10)
+Explanation: proxmox-backup-client 3.0.2 requires libzstd1>=1.5.2
+Package: libzstd1
+Pin: release n=kinetic
+Pin-Priority: 900
+
+# Install from ubuntu kinetic (22.10)
+Explanation: proxmox-backup-client 3.0.2 requires libzstd1>=1.5.2
+Package: libzstd1:i386
+Pin: release n=kinetic
+Pin-Priority: 900

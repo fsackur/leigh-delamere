@@ -7,6 +7,8 @@
 
     - include_tasks: ../common/vnc_server.yml
 
+    - include_tasks: ../common/proxmox_backup_client.yml
+
     - include_tasks: ../common/fonts.yml
 
     - name: Assert that Freddie's home folder is encrypted  # Must be done interactively
