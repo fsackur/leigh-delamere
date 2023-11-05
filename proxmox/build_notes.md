@@ -1,5 +1,13 @@
 # Proxmox build notes
 
+## Context
+
+Proxmox is free to use without a subscription. However, it displays a nag screen on login and you have to explicitly add the community repository to receive updates.
+
+> TODO: remove the nag screen. There is a function in `/usr/share/javascript/proxmox-widget-toolkit/proxmoxlib.js` but it's an arms race, so proxmox break working solutions on updates, and my perl skills aren't up to reliably editing javascript. Possibly in a docker container?
+
+## Manual steps
+
 1. Install Proxmox VE 8.0.2 from USB
 2. Browse to [https://10.9.9.2:8006](https://10.9.9.2:8006) (or whatever the IP address is)
 3. Node > Updates > Repositories
@@ -58,4 +66,10 @@
     systemctl daemon-reload
     systemctl enable nginx
     systemctl start nginx
+    ```
+6. Install sudo:
+
+    ```bash
+    apt install sudo
+    echo "freddie ALL=(ALL:ALL) ALL" >> /etc/sudoers.d/100-user
     ```
