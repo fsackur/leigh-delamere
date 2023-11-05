@@ -90,3 +90,13 @@
         line: UUID={{ timeshift_partition_uuid }} /timeshift      ext4    nofail          0       99
         insertafter: EOF
         state: present
+
+    - name: Create user for Harriet
+      user:
+        name: harriet
+        state: present
+        createhome: true
+        groups:
+          - sudo
+          - nopasswdlogin
+        append: yes
