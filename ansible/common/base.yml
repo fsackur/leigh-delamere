@@ -81,3 +81,21 @@
     creates: "{{ ansible_user_home }}/.local/share/chezmoi/"
   become: false
   when: ansible_user == "freddie"
+
+- name: Test /etc/skel/.bashrc
+  stat:
+    path: /etc/skel/.bashrc
+  register: bashrc
+
+- name: Alias ls to ls -Ahl
+  when: bashrc.stat.exists
+  lineinfile:
+    path: "{{ item }}/.bash_aliases"
+    regexp: ^alias ls=
+    line: alias ls="ls -Ahl"
+    insertafter: EOF
+    create: true
+    mode: 0644
+  loop:
+    - /etc/skel/
+    - /root/
