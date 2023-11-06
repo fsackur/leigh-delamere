@@ -74,3 +74,17 @@
         owner: root
         group: root
         mode: 0644
+
+    - name: Create timeshift mount point
+      file:
+        path: /timeshift
+        state: directory
+        mode: 0644
+
+    - name: Mount timeshift partition
+      lineinfile:
+        path: /etc/fstab
+        regexp: ^UUID={{ timeshift_partition_uuid }}
+        line: UUID={{ timeshift_partition_uuid }} /timeshift      ext4    nofail          0       99
+        insertafter: EOF
+        state: present
