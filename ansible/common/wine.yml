@@ -1,0 +1,43 @@
+---
+- name: Add WineHQ GPG apt key
+  get_url:
+    url: https://dl.winehq.org/wine-builds/winehq.key
+    dest: /etc/apt/trusted.gpg.d/winehq.key
+    mode: 0644
+
+- name: Add WineHQ repository
+  apt_repository:
+    repo: deb [signed-by=/etc/apt/trusted.gpg.d/winehq.key] https://dl.winehq.org/wine-builds/ubuntu jammy main
+    state: present
+
+- name: Install wine 8.0
+  apt:
+    pkg:
+      - wine-stable-i386
+      - wine-stable
+      - libvkd3d1
+    update_cache: true
+    install_recommends: true
+
+- name: Add wine 8.0 to path
+  lineinfile:
+    path: /etc/profile
+    line: 'PATH="/opt/wine-stable/bin:$PATH"'
+    insertafter: EOF
+    state: present
+    create: true
+
+- name: Uninstall wine 6.0
+  apt:
+    pkg:
+      - wine
+      - wine32
+      - wine64
+    state: absent
+    autoclean: true
+
+- name: Fix wine not showing up in association list  # https://askubuntu.com/a/971547/1743668
+  file:
+    src: /opt/wine-stable/share/applications/wine.desktop
+    dest: /usr/share/applications/wine.desktop
+    state: link

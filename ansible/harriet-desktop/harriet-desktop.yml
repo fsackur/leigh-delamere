@@ -9,6 +9,8 @@
 
     - include_tasks: ../common/proxmox_backup_client.yml
 
+    - include_tasks: ../common/wine.yml
+
     - include_tasks: ../common/fonts.yml
 
     - name: Assert that Freddie's home folder is encrypted  # Must be done interactively
@@ -30,9 +32,6 @@
           - code
           - fontconfig
           - gparted
-          - wine
-          - wine32
-          - wine64
         state: latest
         update_cache: true
         autoclean: true
@@ -103,9 +102,3 @@
           - sudo
           - nopasswdlogin
         append: yes
-
-    - name: Fix wine not showing up in association list  # https://askubuntu.com/a/971547/1743668
-      file:
-        src: /usr/share/doc/wine/examples/wine.desktop
-        dest: /usr/share/applications/wine.desktop
-        state: link
