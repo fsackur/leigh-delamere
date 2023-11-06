@@ -2,7 +2,7 @@
 
 ## Background
 
-OPNsense is based on FreeBSD, so a lot of the commands are different.
+OPNsense is based on FreeBSD, so a lot of the commands are different to linux.
 
 Config is stored in `/conf/config.xml`. This is the same file you download under `System` > `Configuration` > `Backups` > `Download configuration`. As of 23.7, user passwords in the xml file are hashed and salted, but others are not (e.g. SMTP, SNMP), so care needs to be taken with backup storage.
 
@@ -22,6 +22,17 @@ Local service name resolution is done by creating static leases.
 
 VPN. I had planned to use tailscale, but OPNsense supports OpenVPN, which reduces moving parts.
 
+## Manual steps
+
+1. Create non-root user in the GUI. Ensure you set the login shell and paste your public key under `authorized_keys`.
+2. Install guest agent:
+
+   ```bash
+   sudo pkg install qemu-guest-agent
+   sysrc qemu_guest_agent_enable="YES"
+   sudo service qemu-guest-agent start
+   ```
+
 ## Nuisances and fixes
 
 1. I had issues with hardware offloading. Ensure you leave `Interfaces` > `Settings` > disable hardware `CRC`, `TSO` and `LRO` ticked.
@@ -34,13 +45,14 @@ VPN. I had planned to use tailscale, but OPNsense supports OpenVPN, which reduce
     3. I'm not even mucking with `LRO`. Just disable it.
 2. Issues with SSH and sudo - because bracketed paste randomly turns on, so pasting a complex password fails. If you paste something and it's wrapped in `00~`/`01~`, that's the issue.
     - Fix (hopefully): copy over `/etc/inputrc` and `chmod 755`
-3. Enabling new user for sudo:
+3. Packages for ease of use:
+   - `pkg install bash nano` (then you can set your login shell to bash in the GUI)
+   - `echo 'export EDITOR="nano"' | sudo tee -a /root/.bashrc` (for when you really want to `sudo bash`)
+   - `sed -i.bak s/EDITOR=vi/EDITOR=nano/g ~/.profile && rm .profile.bak`
+   - I could not find a package for `ip` in the community repo.
+4. Package for ease of use: [opnsense-cli](https://github.com/mihakralj/opnsense-cli) (install instructions under "releases").
+5. Enable non-root user for sudo:
     - Best to create the user in the GUI. Ensure you set the login shell and paste your public key under `authorized_keys`.
-    - `visudo /usr/local/etc/sudoers.d/100-user`
+    - `EDITOR=nano visudo /usr/local/etc/sudoers.d/100-user`
     - copy the user line from `/usr/local/etc/sudoers.d/100-user`, editing username to suit
-    - if you don't know vi, it's weird:
-        - if it doesn't enter text, press the `i` key
-        - when finished, press `Esc` then type `:wq` and press `Enter`
-    - don't just copy the file over. This file is tricky and should only ever be edited with `visudo` for safety
-4. Packages for ease of use: `pkg install bash nano` (then you can set your login shell to bash in the GUI). I could not find a package for `ip` in the community repo.
-5. Package for ease of use: [opnsense-cli](https://github.com/mihakralj/opnsense-cli) (install instructions under "releases").
+    - don't just copy the file over. This file is tricky and should only ever be edited with `visudo` for safety - that includes permissions
