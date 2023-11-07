@@ -14,6 +14,7 @@ Restart=on-failure
 RestartSec=30
 LoadCredential={{ proxmox_backup.passwd_file }}:/root/.secrets/{{ proxmox_backup.passwd_file }}
 WorkingDirectory=%E/proxmox-backup
+EnvironmentFile=%E/proxmox-backup/proxmox-backup.env
 ExecStart=/bin/systemd-inhibit --why=backup %E/proxmox-backup/proxmox-backup.sh
 
 [Install]
