@@ -1,0 +1,11 @@
+[Unit]
+Description=Proxmox backup timer
+
+[Timer]
+Unit=proxmox-backup.service
+OnCalendar={{ backup_schedule }}
+WakeSystem=true
+Persistent=true
+
+[Install]
+WantedBy=timers.target
