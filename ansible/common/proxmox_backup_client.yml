@@ -34,6 +34,10 @@
 - name: _
   set_fact:
     proxmox_backup:
+      backup_name: harriet-home.pxar
+      backup_root: /home/harriet/
+      include_timeshift: true
+      timeshift_path: /timeshift/
       passwd_file: proxmox_backup_passwd
       username: backup_user@pbs
       token_name: "{{ ansible_hostname }}"
