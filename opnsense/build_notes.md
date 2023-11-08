@@ -18,10 +18,6 @@ Unbound DNS turned out to do most of what pihole does, so I just used that for D
 
 Local service name resolution is done by creating static leases.
 
-## To do
-
-VPN. I had planned to use tailscale, but OPNsense supports OpenVPN, which reduces moving parts.
-
 ## Manual steps
 
 1. Create non-root user in the GUI. Ensure you set the login shell and paste your public key under `authorized_keys`.
@@ -70,58 +66,51 @@ VPN. I had planned to use tailscale, but OPNsense supports OpenVPN, which reduce
     - Hostname: `leigh.delamere.dvlp.casa`
     - Check IP method: `Interface`
     - Interface to monitor: `WAN`
+3. Cloudflare limits changes to once every 5 minutes, so if `leigh.delamere.dvlp.casa` does not resolve to the correct IP, wait 5 mins and try again.
 
-### VPN server
+### VPN config file
 
-1. Generate new cert for user in `System` > `Access` > `Users` > `Edit` > `User Certificates`   <!-- and export the cert and private key -->
-2. `System` > `Trust` > `Certificates` > for the `OpenVPN Server` cert, `export user cert`
-    - assume the download is called `Web+GUI+TLS+certificate.crt` for the next steps; amend as needed
-3. `System` > `Trust` > `Certificates` > for the user cert, `export ca+user cert+user key in .p12 format`
-    - use the user's password to protect the export
-    - assume the download is called `freddie.p12` for the next steps; amend as needed
-4. `VPN` > `OpenVPN` > `Client Export` >
-    - extract the downloaded zip
-    - assume the downloaded files are called `Remote_access.ovpn` and `Remote_access-tls.key` for the next steps; amend as needed
-5. Rename:
-    - `freddie.p12` => `freddie@opnsense.leigh.delamere.pfx`
-    - `Web+GUI+TLS+certificate.crt` => `opnsense.leigh.delamere.crt`
-    - `Remote_access.ovpn` => `opnsense.leigh.delamere.ovpn`
-    - `Remote_access-tls.key` => `opnsense.leigh.delamere.tls.key`
-6. Edit `opnsense.leigh.delamere.ovpn`:
-    - `tls-auth Remote_access-tls.key 1` => `tls-auth opnsense.leigh.delamere.tls.key 1`
-    - append `ca opnsense.leigh.delamere.crt`
-    - append `pkcs12 freddie@opnsense.leigh.delamere.pfx`
-7. Zip up the files as `opnsense.leigh.delamere.zip`
+1. `VPN` > `OpenVPN` > `Client Export`
+    - Export type: `File only`
+    - Hostname: `leigh.delamere.dvlp.casa`
+    - Custom config:
 
-## VPN client
+        ```plaintext
+        ca Leigh_Delamere.crt
+        ```
+
+    - Click on the download for `(none) Exclude certificate from export` (because we don't require client certificates for authentication)
+2. `System` > `Trust` > `Certificates` > for `OpenVPN Server`, do `export user cert`
+3. Rename the OpenVPN Server certificate to `Leigh_Delamere.crt`
+4. Both files (`Leigh_Delamere.ovpn` and `Leigh_Delamere.crt`) are required to be in the same folder for the client
+
+Config files are here:
+
+[Leigh_Delamere.ovpn](./VPN_client_config/Leigh_Delamere.ovpn)
+
+[Leigh_Delamere.crt](./VPN_client_config/Leigh_Delamere.crt)
 
 ### Windows
 
-Tested on Windows 11 with OpenVPN Community 2.6.6-I001
+Tested on Windows 11 with OpenVPN Community 2.6.6-I001:
 
 1. Install OpenVPN community edition (not Connect) from [openvpn.net](https://openvpn.net/community-downloads/) or with `winget install OpenVPNTechnologies.OpenVPN`
-    - OpenVPN Connect 3.4.2 crashed every time, likely due to the self-signed certificate
     - Optionally, include OpenSSL, in case it's needed for processing pfx certs
     - If installation fails with an error about TAP drivers, try excluding `Wintun`
-2. Create `OpenVPN\config` in your home folder, e.g. `C:\Users\Freddie\OpenVPN\config`
-3. Extract zip to the config folder, so you have e.g. `C:\Users\Freddie\OpenVPN\config\opnsense\opnsense.leigh.delamere.ovpn`
+    - OpenVPN Connect 3.4.2 doesn't respect the DNS servers pushed from OpnSense 23.7; Community Edition works.
+2. Create `OpenVPN\config\Leigh_Delamere` folder in your home folder, e.g. `C:\Users\Freddie\OpenVPN\config\Leigh_Delamere`
+3. Copy `Leigh_Delamere.ovpn` and `Leigh_Delamere.crt` to the config folder, so you have e.g. `C:\Users\Freddie\OpenVPN\config\Leigh_Delamere\Leigh_Delamere.ovpn`
 4. Start `OpenVPN GUI`
 5. Right-click on the systray icon > `Connect`
 
 ### Linux
 
-4. Convert crt&key into .pfx:
+Tested on Ubuntu 23.10 with OpenVPN 2.6.5:
 
-    ```
-    ❯ openssl pkcs12 -in /c/gitroot/leigh-delamere/vpn/freddie-freddie.crt -inkey /c/gitroot/leigh-delamere/vpn/freddie-freddie.key -out /c/gitroot/leigh-delamere/vpn/freddie-freddie.pfx -export
-    Enter Export Password:
-    Verifying - Enter Export Password:
-    ```
+1. Put both files (`Leigh_Delamere.ovpn` and `Leigh_Delamere.crt`) somewhere
+2. `openvpn --config ./Leigh_Delamere.ovpn`
 
-    ```
-    openssl pkcs12 -CAfile ./Web+GUI+TLS+certificate.crt -in freddie-freddie.crt -inkey freddie-freddie.key -out freddie-freddie.pfx -export
-    ```
+#### Issues
 
-    ```
-    openvpn --config .\Remote_access.ovpn --ca .\Web+GUI+TLS+certificate.crt --auth-user-pass pass --pkcs12 .\nopass.pfx
-    ```
+- You could use `nohup` to not tie up the console, but that presents issues with interactive auth. Use `--auth-user-pass <passwd_file>`.
+- DNS not respected, AFAICS.
