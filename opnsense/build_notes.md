@@ -47,7 +47,7 @@ VPN. I had planned to use tailscale, but OPNsense supports OpenVPN, which reduce
     - Fix (hopefully): copy over `/etc/inputrc` and `chmod 755`
 3. Packages for ease of use:
    - `pkg install bash nano` (then you can set your login shell to bash in the GUI)
-   - `echo 'export EDITOR="nano"' | sudo tee -a /root/.bashrc` (for when you really want to `sudo bash`)
+   - copy over `.bash*` files in this repo to the home folder and `chmod +x` them (BSD bash does not ship with a `.bashrc` or have `/etc/skel`)
    - `sed -i.bak s/EDITOR=vi/EDITOR=nano/g ~/.profile && rm .profile.bak`
    - I could not find a package for `ip` in the community repo.
 4. Package for ease of use: [opnsense-cli](https://github.com/mihakralj/opnsense-cli) (install instructions under "releases").
