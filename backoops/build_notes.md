@@ -104,6 +104,10 @@ It is based on Debian 12, so use that when searching how to do things in the she
     [Unit]
     Requires=proxmox-backup-proxy.service
     After=proxmox-backup-proxy.service
+
+    [Service]
+    Restart=on-failure
+    RestartSec=10
     EOF
 
     systemctl daemon-reload
