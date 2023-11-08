@@ -56,3 +56,72 @@ VPN. I had planned to use tailscale, but OPNsense supports OpenVPN, which reduce
     - `EDITOR=nano visudo /usr/local/etc/sudoers.d/100-user`
     - copy the user line from `/usr/local/etc/sudoers.d/100-user`, editing username to suit
     - don't just copy the file over. This file is tricky and should only ever be edited with `visudo` for safety - that includes permissions
+
+## VPN
+
+### Dynamic DNS
+
+1. Install `os-ddclient` plugin
+2. `Services` > `Dynamic DNS` > `Add`:
+    - Service: Cloudflare
+    - Username: _leave blank_
+    - Password: _Cloudflare API token_
+    - Zone: `dvlp.casa`
+    - Hostname: `leigh.delamere.dvlp.casa`
+    - Check IP method: `Interface`
+    - Interface to monitor: `WAN`
+
+### VPN server
+
+1. Generate new cert for user in `System` > `Access` > `Users` > `Edit` > `User Certificates`   <!-- and export the cert and private key -->
+2. `System` > `Trust` > `Certificates` > for the `OpenVPN Server` cert, `export user cert`
+    - assume the download is called `Web+GUI+TLS+certificate.crt` for the next steps; amend as needed
+3. `System` > `Trust` > `Certificates` > for the user cert, `export ca+user cert+user key in .p12 format`
+    - use the user's password to protect the export
+    - assume the download is called `freddie.p12` for the next steps; amend as needed
+4. `VPN` > `OpenVPN` > `Client Export` >
+    - extract the downloaded zip
+    - assume the downloaded files are called `Remote_access.ovpn` and `Remote_access-tls.key` for the next steps; amend as needed
+5. Rename:
+    - `freddie.p12` => `freddie@opnsense.leigh.delamere.pfx`
+    - `Web+GUI+TLS+certificate.crt` => `opnsense.leigh.delamere.crt`
+    - `Remote_access.ovpn` => `opnsense.leigh.delamere.ovpn`
+    - `Remote_access-tls.key` => `opnsense.leigh.delamere.tls.key`
+6. Edit `opnsense.leigh.delamere.ovpn`:
+    - `tls-auth Remote_access-tls.key 1` => `tls-auth opnsense.leigh.delamere.tls.key 1`
+    - append `ca opnsense.leigh.delamere.crt`
+    - append `pkcs12 freddie@opnsense.leigh.delamere.pfx`
+7. Zip up the files as `opnsense.leigh.delamere.zip`
+
+## VPN client
+
+### Windows
+
+Tested on Windows 11 with OpenVPN Community 2.6.6-I001
+
+1. Install OpenVPN community edition (not Connect) from [openvpn.net](https://openvpn.net/community-downloads/) or with `winget install OpenVPNTechnologies.OpenVPN`
+    - OpenVPN Connect 3.4.2 crashed every time, likely due to the self-signed certificate
+    - Optionally, include OpenSSL, in case it's needed for processing pfx certs
+    - If installation fails with an error about TAP drivers, try excluding `Wintun`
+2. Create `OpenVPN\config` in your home folder, e.g. `C:\Users\Freddie\OpenVPN\config`
+3. Extract zip to the config folder, so you have e.g. `C:\Users\Freddie\OpenVPN\config\opnsense\opnsense.leigh.delamere.ovpn`
+4. Start `OpenVPN GUI`
+5. Right-click on the systray icon > `Connect`
+
+### Linux
+
+4. Convert crt&key into .pfx:
+
+    ```
+    ❯ openssl pkcs12 -in /c/gitroot/leigh-delamere/vpn/freddie-freddie.crt -inkey /c/gitroot/leigh-delamere/vpn/freddie-freddie.key -out /c/gitroot/leigh-delamere/vpn/freddie-freddie.pfx -export
+    Enter Export Password:
+    Verifying - Enter Export Password:
+    ```
+
+    ```
+    openssl pkcs12 -CAfile ./Web+GUI+TLS+certificate.crt -in freddie-freddie.crt -inkey freddie-freddie.key -out freddie-freddie.pfx -export
+    ```
+
+    ```
+    openvpn --config .\Remote_access.ovpn --ca .\Web+GUI+TLS+certificate.crt --auth-user-pass pass --pkcs12 .\nopass.pfx
+    ```
