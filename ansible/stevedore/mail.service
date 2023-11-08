@@ -1,0 +1,18 @@
+[Unit]
+Description=Postfix SMTP mail relay
+Requires=docker.service multi-user.target
+After=docker.service network-online.target dhcpd.service
+
+[Service]
+Restart=always
+RemainAfterExit=true
+LogsDirectory=mail
+StateDirectory=mail
+ConfigurationDirectory=mail
+WorkingDirectory=%E/mail
+LoadCredential=mail_passwd:/root/.secrets/mail_passwd
+ExecStart=docker compose up --remove-orphans
+ExecStop=docker compose down
+
+[Install]
+WantedBy=multi-user.target

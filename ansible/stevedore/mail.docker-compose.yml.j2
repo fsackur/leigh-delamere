@@ -1,0 +1,41 @@
+---
+version: "3.7"
+
+services:
+  mail:
+    container_name: mail
+    image: mailserver/docker-mailserver
+    hostname: mail
+    restart: always
+    healthcheck:
+      test: "ss --listening --tcp | grep -P 'LISTEN.+:smtp' || exit 1"
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+    stop_grace_period: 2s
+    ports:
+      - "{{ host_addresses.mail }}:25:25"
+      - "{{ host_addresses.mail }}:465:465"
+      - "{{ host_addresses.mail }}:587:587"
+    volumes:
+      # variables populated by systemd: https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html#RuntimeDirectory=
+      - ${CONFIGURATION_DIRECTORY:-.}/config:/tmp/docker-mailserver  # referred to in docs as `docker-data/dms/config`
+      - ${LOGS_DIRECTORY:-./log/mail}:/var/log/mail
+      - ${STATE_DIRECTORY:-./mail-state}:/var/mail-state
+      # https://docker-mailserver.github.io/docker-mailserver/latest/config/advanced/mail-forwarding/relay-hosts/#advanced-configuration
+      - ${CREDENTIALS_DIRECTORY:-/root/.secrets}/mail_passwd:/tmp/docker-mailserver/postfix-sasl-password.cf
+    environment:
+      TZ: "Europe/London"
+      POSTFIX_INET_PROTOCOLS: ipv4
+      OVERRIDE_HOSTNAME: mail.leigh.delamere
+      LOG_LEVEL: debug    # error/warn/info/debug/trace (default: info)
+      ONE_DIR: 1  # consolidate all states into a single directory (/var/mail-state)
+      SMTP_ONLY: 1
+      ENABLE_AMAVIS: 0
+      ENABLE_OPENDKIM: 0
+      ENABLE_OPENDMARC: 0
+      ENABLE_POLICYD_SPF: 0
+      POSTMASTER_ADDRESS: postmaster.leigh.delamere@dustyfox.uk
+      REPORT_SENDER: mail.leigh.delamere@dustyfox.uk
+      LOGWATCH_SENDER: mail.leigh.delamere@dustyfox.uk
+      RELAY_HOST: mail.runbox.com:465
