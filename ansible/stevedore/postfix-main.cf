@@ -1,10 +1,5 @@
+# IPs in these networks are spared the PREGREET delay tarpit
 mynetworks = 127.0.0.0/8 [::1]/128 [fe80::]/64 10.9.9.0/24
-
-# relayhost = mail.runbox.com:465
-
-# Only relay when RCPT TO address is in these domains
-# relay_domains = dustyfox.uk
-# reject_unauth_destination = yes
 
 # Client-side SMTPS requires "encrypt" or stronger.
 smtp_tls_security_level = encrypt
@@ -12,3 +7,17 @@ smtp_tls_wrappermode = yes
 
 # Opportunistically use TLS if STARTTLS is offered
 smtp_use_tls = yes
+
+relayhost = mail.runbox.com:465
+relay_domains = dustyfox.uk
+# Alternatively:
+# sender_dependent_relayhost_maps = texthash:/tmp/docker-mailserver/postfix-relaymap.cf
+
+# Authenticate to upstream SMTP relay
+smtp_sasl_auth_enable = yes
+smtp_sasl_security_options = noanonymous
+smtp_sender_dependent_authentication = yes
+smtp_sasl_password_maps = texthash:/tmp/docker-mailserver/postfix-sasl-password.cf
+
+# Only relay when RCPT TO address is in relay_domains
+smtpd_client_restrictions = permit_auth_destination, reject

@@ -13,7 +13,7 @@
   when: not mail_passwd.stat.exists
   lineinfile:
     path: "{{ mail_passwd_file }}"
-    line: "@dustyfox.uk        freddie.sackur@dustyfox.uk:insert_app_password_here"
+    line: "mail.runbox.com freddie.sackur@dustyfox.uk:insert_app_password_here"
     insertafter: EOF
     create: true
     mode: 0600
@@ -46,11 +46,8 @@
 
 - name: Copy mail postfix conf
   template:
-    src: "{{ item }}"
-    dest: /etc/mail/config/{{ item }}
-  loop:
-    - postfix-main.cf
-    - postfix-relaymap.cf
+    src: "postfix-main.cf"
+    dest: /etc/mail/config/postfix-main.cf
 
 # - include_tasks: container_user_profile.yml
 #   vars:
