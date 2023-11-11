@@ -42,7 +42,7 @@
       username: backup_user@pbs
       token_name: "{{ ansible_hostname }}"
       server: backoops
-      datastore: Test
+      datastore: NVMe
 
 - name: Test backup password file
   stat:

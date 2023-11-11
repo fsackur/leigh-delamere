@@ -14,7 +14,7 @@ passwd_file="${passwd_file:-proxmox_backup_passwd}"
 username="${username:-backup_user@pbs}"
 token_name="${token_name:-$(hostname)}"
 server="${server:-backoops}"
-datastore="${datastore:-Test}"
+datastore="${datastore:-NVMe}"
 
 if [ ! -f $passwd_file ]; then
     # set by systemd, defaults to /root/.secrets
