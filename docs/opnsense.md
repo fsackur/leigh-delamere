@@ -83,34 +83,3 @@ Local service name resolution is done by creating static leases.
 2. `System` > `Trust` > `Certificates` > for `OpenVPN Server`, do `export user cert`
 3. Rename the OpenVPN Server certificate to `Leigh_Delamere.crt`
 4. Both files (`Leigh_Delamere.ovpn` and `Leigh_Delamere.crt`) are required to be in the same folder for the client
-
-Config files are here:
-
-[Leigh_Delamere.ovpn](../manual_build/opnsense/VPN_client_config/Leigh_Delamere.ovpn)
-
-[Leigh_Delamere.crt](../manual_build/opnsense/VPN_client_config/Leigh_Delamere.crt)
-
-### Windows
-
-Tested on Windows 11 with OpenVPN Community 2.6.6-I001:
-
-1. Install OpenVPN community edition (not Connect) from [openvpn.net](https://openvpn.net/community-downloads/) or with `winget install OpenVPNTechnologies.OpenVPN`
-    - Optionally, include OpenSSL, in case it's needed for processing pfx certs
-    - If installation fails with an error about TAP drivers, try excluding `Wintun`
-    - OpenVPN Connect 3.4.2 doesn't respect the DNS servers pushed from OpnSense 23.7; Community Edition works.
-2. Create `OpenVPN\config\Leigh_Delamere` folder in your home folder, e.g. `C:\Users\Freddie\OpenVPN\config\Leigh_Delamere`
-3. Copy `Leigh_Delamere.ovpn` and `Leigh_Delamere.crt` to the config folder, so you have e.g. `C:\Users\Freddie\OpenVPN\config\Leigh_Delamere\Leigh_Delamere.ovpn`
-4. Start `OpenVPN GUI`
-5. Right-click on the systray icon > `Connect`
-
-### Linux
-
-Tested on Ubuntu 23.10 with OpenVPN 2.6.5:
-
-1. Put both files (`Leigh_Delamere.ovpn` and `Leigh_Delamere.crt`) somewhere
-2. `openvpn --config ./Leigh_Delamere.ovpn`
-
-#### Issues
-
-- You could use `nohup` to not tie up the console, but that presents issues with interactive auth. Use `--auth-user-pass <passwd_file>`.
-- DNS not respected, AFAICS.
