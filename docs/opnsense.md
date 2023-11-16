@@ -86,9 +86,9 @@ Local service name resolution is done by creating static leases.
 
 Config files are here:
 
-[Leigh_Delamere.ovpn](./VPN_client_config/Leigh_Delamere.ovpn)
+[Leigh_Delamere.ovpn](../manual_build/opnsense/VPN_client_config/Leigh_Delamere.ovpn)
 
-[Leigh_Delamere.crt](./VPN_client_config/Leigh_Delamere.crt)
+[Leigh_Delamere.crt](../manual_build/opnsense/VPN_client_config/Leigh_Delamere.crt)
 
 ### Windows
 
