@@ -113,3 +113,96 @@ It is based on Debian 12, so use that when searching how to do things in the she
     ```
 
     Now you can access the server at [https://proxbox/](https://proxbox/) - or you will, once you've set up DNS in OPNsense.
+
+7. Set up backup
+
+    See this [forum post](https://forum.proxmox.com/threads/backing-up-proxmox-the-host-itself-what-and-how.24672/).
+
+    ```bash
+    mkdir -p /root/.secrets /etc/proxmox-backup
+    chmod 0755 /root/.secrets /etc/proxmox-backup
+    echo "<API token from backoops>" > /root/.secrets/proxmox_backup_passwd
+
+    cat << 'EOF' > /etc/proxmox-backup/proxmox-backup.sh
+    #!/bin/bash
+
+    set -euo pipefail
+
+    echo "====== Starting backup: $0 ======"
+
+
+    # default values
+    backup_name="${backup_name:-pve.pxar}"
+    backup_root="${backup_root:-/etc/pve}"
+
+    passwd_file="${passwd_file:-proxmox_backup_passwd}"
+    username="${username:-backup_user@pbs}"
+    token_name="${token_name:-$(hostname)}"
+    server="${server:-backoops}"
+    datastore="${datastore:-NVMe}"
+
+    if [ ! -f $passwd_file ]; then
+        # set by systemd, defaults to /root/.secrets
+        CREDENTIALS_DIRECTORY="${CREDENTIALS_DIRECTORY:-/root/.secrets/}"
+        passwd_file="$CREDENTIALS_DIRECTORY/$passwd_file"
+    fi
+
+
+    export PBS_REPOSITORY="$username!$token_name@$server:443:$datastore"
+    export PBS_PASSWORD_FILE=$(realpath $passwd_file)
+
+
+    backup_specs=("pve.pxar:/etc/pve" "network.pxar:/etc/network")
+
+
+    for backup_spec in ${backup_specs[@]}; do
+        name="${backup_spec%:*}"
+        path="${backup_spec#*:}"
+        echo "Backing up $path to $name ..."
+    done
+
+
+    proxmox-backup-client backup ${backup_specs[@]} --skip-lost-and-found true $@
+    EOF
+
+    chmod +x /etc/proxmox-backup/proxmox-backup.sh
+
+    cat << EOF > /etc/systemd/system/proxmox-backup.timer
+    [Unit]
+    Description=Proxmox backup timer
+
+    [Timer]
+    Unit=proxmox-backup.service
+    OnCalendar=10:00
+    WakeSystem=true
+    Persistent=true
+
+    [Install]
+    WantedBy=timers.target
+    EOF
+
+    cat << EOF > /etc/systemd/system/proxmox-backup.service
+    [Unit]
+    Description=Proxmox backup
+    Requires=network-online.target
+    After=multi-user.target network-online.target
+    StartLimitBurst=5
+    StartLimitInterval=200
+    # Will not restart any more after StartLimitBurst times,
+    # because (StartLimitBurst * RestartSec) < StartLimitInterval
+
+    [Service]
+    Type=oneshot
+    RemainAfterExit=false
+    Restart=on-failure
+    RestartSec=30
+    LoadCredential=proxmox_backup_passwd:/root/.secrets/proxmox_backup_passwd
+    WorkingDirectory=%E/proxmox-backup
+    ExecStart=/bin/systemd-inhibit --why=backup %E/proxmox-backup/proxmox-backup.sh
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+    systemctl enable proxmox-backup.timer
+    ```
