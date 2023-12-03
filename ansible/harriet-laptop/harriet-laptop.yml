@@ -1,0 +1,30 @@
+---
+- name: harriet-laptop
+  hosts: all
+  become: true
+  tasks:
+    - include_tasks: ../common/base.yml
+
+    - name: Add VS Code repository
+      apt_repository:
+        repo: deb https://packages.microsoft.com/repos/vscode stable main
+        state: present
+
+    - name: Install base packages
+      apt:
+        pkg:
+          - nohang
+          - kitty
+          - dirmngr
+          - code
+          - fontconfig
+          - gparted
+        state: latest
+        update_cache: true
+        autoclean: true
+
+    - name: Enable nohang-desktop service
+      service:
+        name: nohang-desktop
+        enabled: true
+        state: started
