@@ -77,7 +77,7 @@
 
 - name: Init chezmoi
   shell:
-    cmd: chezmoi init fsackur/dotfiles --branch chezmoi --ssh --recurse-submodules=false --apply --verbose
+    cmd: chezmoi init fsackur/dotfiles --ssh --recurse-submodules=false --apply --verbose
     creates: "{{ ansible_user_home }}/.local/share/chezmoi/"
   become: false
   when: ansible_user == "freddie"

@@ -44,15 +44,6 @@
         enabled: true
         state: started
 
-    - name: Copy kitty config
-      copy:
-        src: kitty
-        dest: "{{ ansible_user_home }}/.config/"
-        force: false
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
-      become: false
-
     - name: Install flatpaks
       flatpak:
         name: "{{ item }}"
