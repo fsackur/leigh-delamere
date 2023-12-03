@@ -3,7 +3,7 @@
   hosts: all
   become: true
   vars:
-    backup_schedule: "03:00"  # for testing: "*:00/1" => every 1 minute; systemd-analyze calendar --iterations=8 '03:00' | grep Iter
+    backup_schedule: "10:00"  # for testing: "*:00/1" => every 1 minute; systemd-analyze calendar --iterations=8 '03:00' | grep Iter
   tasks:
     - include_tasks: ../common/base.yml
 
