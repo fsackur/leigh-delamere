@@ -76,6 +76,7 @@
       user:
         name: harriet
         state: present
+        expires: -1
         createhome: true
         groups:
           - sudo
