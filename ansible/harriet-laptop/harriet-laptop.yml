@@ -2,8 +2,23 @@
 - name: harriet-laptop
   hosts: all
   become: true
+  vars:
+    backup_schedule: "03:00"  # for testing: "*:00/1" => every 1 minute; systemd-analyze calendar --iterations=8 '03:00' | grep Iter
   tasks:
     - include_tasks: ../common/base.yml
+
+    - include_tasks: ../common/vnc_server.yml
+
+    - include_tasks: ../common/proxmox_backup_client.yml
+
+    - include_tasks: ../common/wine.yml
+
+    - include_tasks: ../common/fonts.yml
+
+    - name: Assert that Freddie's home folder is encrypted  # Must be done interactively
+      include_tasks: ../common/check_home_folder_encryption.yml
+      vars:
+        user: freddie
 
     - name: Add VS Code repository
       apt_repository:
@@ -28,3 +43,67 @@
         name: nohang-desktop
         enabled: true
         state: started
+
+    - name: Install flatpaks
+      flatpak:
+        name: "{{ item }}"
+        method: system
+      loop:
+        - Zoom
+
+    - name: Get timeshift partition UUID
+      shell: lsblk -o NAME,LABEL,UUID | grep timeshift | awk '{print $NF}'
+      register: _timeshift_partition_uuid
+      changed_when: false
+      failed_when:
+        _timeshift_partition_uuid.rc != 0 or
+        _timeshift_partition_uuid.stdout == "" or
+        _timeshift_partition_uuid.stdout_lines|length != 1
+
+    - name: _
+      set_fact:
+        timeshift_partition_uuid: "{{ _timeshift_partition_uuid.stdout }}"
+
+    - name: Copy timeshift config
+      template:
+        src: timeshift.json.j2
+        dest: /etc/timeshift/timeshift.json
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Create timeshift mount point
+      file:
+        path: /timeshift
+        state: directory
+        mode: 0644
+
+    - name: Mount timeshift partition
+      lineinfile:
+        path: /etc/fstab
+        regexp: ^UUID={{ timeshift_partition_uuid }}
+        line: UUID={{ timeshift_partition_uuid }} /timeshift      ext4    nofail          0       99
+        insertafter: EOF
+        state: present
+
+    - name: Create user for Harriet
+      user:
+        name: harriet
+        state: present
+        createhome: true
+        groups:
+          - sudo
+          - nopasswdlogin
+        append: yes
+
+    - name: Download Bookwright installer
+      get_url:
+        url: https://software.blurb.com/bookwright_v2/3.0.2/BookWright.exe
+        dest: /home/harriet/Downloads/BookWright.exe
+        mode: 0777
+
+    - name: Install Bookwright
+      shell:
+        cmd: wine /home/harriet/Downloads/BookWright.exe
+      when: ansible_connection == 'local' and ansible_user == 'harriet'  # unattended install not worth the effort
+      become: false
