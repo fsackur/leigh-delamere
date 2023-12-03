@@ -52,7 +52,7 @@
         - Zoom
 
     - name: Get timeshift partition UUID
-      shell: lsblk -o NAME,LABEL,UUID | grep timeshift | awk '{print $NF}'
+      shell: grep 'UUID=.* / ' /etc/fstab | awk '{print $1}' | sed s/UUID=//g
       register: _timeshift_partition_uuid
       changed_when: false
       failed_when:
@@ -71,20 +71,6 @@
         owner: root
         group: root
         mode: 0644
-
-    - name: Create timeshift mount point
-      file:
-        path: /timeshift
-        state: directory
-        mode: 0644
-
-    - name: Mount timeshift partition
-      lineinfile:
-        path: /etc/fstab
-        regexp: ^UUID={{ timeshift_partition_uuid }}
-        line: UUID={{ timeshift_partition_uuid }} /timeshift      ext4    nofail          0       99
-        insertafter: EOF
-        state: present
 
     - name: Create user for Harriet
       user:
