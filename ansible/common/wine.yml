@@ -15,7 +15,9 @@
     pkg:
       - wine-stable-i386
       - wine-stable
+      - winetricks
       - libvkd3d1
+      - winbind
     update_cache: true
     install_recommends: true
 
