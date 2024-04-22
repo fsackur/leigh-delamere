@@ -137,6 +137,8 @@ Tested on Ubuntu 23.10 with OpenVPN 2.6.5:
 
 1. Put both files (`Leigh_Delamere.ovpn` and `Leigh_Delamere.crt`) somewhere
 2. `openvpn --config ./Leigh_Delamere.ovpn`
+3. Put username and password on separate lines in `./vpn-passwd`
+4. `openvpn --config ./Leigh_Delamere.ovpn --auth-user-pass ./vpn-passwd`
 
 ## Remote support
 
