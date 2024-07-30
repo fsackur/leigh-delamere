@@ -1,0 +1,19 @@
+---
+- name: Install dolphin
+  apt:
+    pkg:
+      # - dolphin
+      - xdg-dekstop-portal
+      - xdg-dekstop-portal-kde
+
+- name: set dolphin
+  shell:
+    command: xdg-mime default org.kde.dolphin.desktop inode/directory application/x-gnome-saved-search
+
+# xdg-mime query default inode/directory
+# find /usr/share/applications/ -iname "*nemo*"
+
+- name: set file chooser
+  lineinfile:
+    path: /usr/share/xdg-desktop-portal/x-cinnamon-portals.conf
+    line: org.freedesktop.impl.portal.FileChooser=dolphin
