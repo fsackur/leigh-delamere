@@ -1,7 +1,5 @@
 #!/usr/bin/bash
 
-dir=$(dirname $0)
-
 hostname=$(hostname)
 playbook="${1:-$hostname/$hostname.yml}"
 if [ "$playbook" == "" ]; then
@@ -23,7 +21,7 @@ else
 fi
 
 ansible-playbook \
-    $dir/$playbook \
+    $playbook \
     -i "$hostname," \
     -l "$hostname," \
     -c local \
