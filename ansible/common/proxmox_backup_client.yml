@@ -1,17 +1,4 @@
 ---
-- name: Pin libzstd1 to ubuntu kinetic (22.10)
-  copy:
-    src: proxmox-libzstd1.pref
-    dest: /etc/apt/preferences.d/proxmox-libzstd1.pref
-    owner: root
-    group: root
-    mode: 0644
-
-- name: Add ubuntu kinetic (22.10) repository
-  apt_repository:
-    repo: deb http://old-releases.ubuntu.com/ubuntu kinetic main
-    state: present
-
 - name: Add Proxmox GPG repo key
   apt_key:
     url: http://download.proxmox.com/debian/proxmox-release-bookworm.gpg
@@ -25,7 +12,6 @@
 - name: Install Proxmox backup client
   apt:
     pkg:
-      - libzstd1
       - proxmox-backup-client
     state: latest
     update_cache: true
