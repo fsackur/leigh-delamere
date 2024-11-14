@@ -1,42 +1,39 @@
 ---
-- name: Install x11vnc
-  apt:
-    pkg:
+- name: install x11vnc
+  package:
+    name:
       - x11vnc
-    state: latest
-    update_cache: false   # presumably done recently
-    autoclean: true
 
 - name: _
   set_fact:
     vnc_passwd_path: /root/.secrets/vnc_passwd
     vnc_hashed_passwd_path: /root/.secrets/vnc_passwd_hash
 
-- name: Test VNC password file
+- name: test vnc password file
   stat:
     path: "{{ vnc_passwd_path }}"
   register: vnc_passwd
 
-- name: Generate VNC password
+- name: generate vnc password
   when: not vnc_passwd.stat.exists
-  include_tasks: generate_password.yml
+  include_tasks: ../common/generate_password.yml
   vars:
     purpose: VNC
     path: "{{ vnc_passwd_path }}"
     charset: a-zA-Z0-9=!$^&*_+@#
     length: 32
 
-- name: Generate VNC password hash
+- name: generate vnc password hash
   when: not vnc_passwd.stat.exists
   shell:
     cmd: x11vnc -storepasswd $(cat {{ vnc_passwd_path }}) {{ vnc_hashed_passwd_path }}
 
-- name: Copy x11vnc service conf
+- name: copy x11vnc service conf
   template:
-    src: x11vnc.service.j2
+    src: files/x11vnc.service.j2
     dest: /etc/systemd/system/x11vnc.service
 
-- name: Enable x11vnc service
+- name: enable x11vnc service
   service:
     name: x11vnc
     enabled: true

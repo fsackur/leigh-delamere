@@ -1,0 +1,7 @@
+---
+- name: grant passwordless sudo
+  template:
+    src: files/sudoers.d/100-user.j2
+    dest: /etc/sudoers.d/100-user
+    mode: "0600"
+  when: ansible_user != "root"

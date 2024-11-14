@@ -1,0 +1,31 @@
+---
+# Fresh build:
+# sudo visudo /etc/sudoers.d/100-user
+#    freddie ALL=(ALL) NOPASSWD:ALL
+# sudo systemctl enable sshd
+# sudo systemctl start sshd
+# mkdir ~/.ssh
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEffBykA/0JEvwZ0XXaoOusrugan/uG6KBZ/CqepKUZA freddie@leigh.delamere" >> ~/.ssh/authorized_keys
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA4Q/4x8o82VjqRnNU234WQJuvsVnZb+bXkQ/7ObiUoK freddie.git@dustyfox.uk" > ~/.ssh/freddie_git.pub
+# chmod 600 ~/.ssh/authorized_keys ~/.ssh/freddie_git.pub
+# echo "Host github.com" >> ~/.ssh/config
+# echo "    User git" >> ~/.ssh/config
+# ssh github.com  # to accept the key
+# echo "AcceptEnv LANG LC_*" | sudo tee /etc/ssh/sshd_config.d/10-ansible.conf
+
+- name: Harriet's desktop and laptop
+  hosts:
+    - harriet-desktop
+    - harriet-laptop
+  vars_files:
+    - vars/vault_wrapper.yml
+  roles:
+    - role: base
+      tags: base
+    - role: vnc_server
+      tags: vnc_server
+    - role: proxmox_backup
+      tags: proxmox_backup
+    - role: desktop
+      tags: desktop
+  become: true

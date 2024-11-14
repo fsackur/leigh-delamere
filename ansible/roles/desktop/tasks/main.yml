@@ -1,0 +1,63 @@
+---
+- name: Create user for Harriet
+  user:
+    name: harriet
+    state: present
+    expires: -1
+    createhome: true
+    # groups:  # TODO
+    #   - sudo
+    #   - nopasswdlogin
+    append: yes
+
+# TODO
+# - include_tasks: fonts.yml
+#   tags: fonts
+
+# TODO
+# - name: Add VS Code repository
+#   apt_repository:
+#     repo: deb https://packages.microsoft.com/repos/vscode stable main
+#     state: present
+
+- name: Install base packages
+  package:
+    name:
+      - kitty
+      - dirmngr
+      - mc
+      - code
+      - fontconfig
+      - gparted
+      - wine
+    state: latest
+    update_cache: true
+    autoclean: true
+
+- name: Install flatpaks
+  flatpak:
+    name:
+      - us.zoom.Zoom
+    method: system
+
+# TODO: wine
+
+- name: Download Bookwright installer
+  get_url:
+    url: https://software.blurb.com/bookwright_v2/3.0.2/BookWright.exe
+    dest: /home/harriet/Downloads/BookWright.exe
+    mode: 0777
+
+- name: Install Bookwright
+  shell:
+    cmd: wine /home/harriet/Downloads/BookWright.exe
+  when: ansible_connection == 'local' and ansible_user == 'harriet'  # unattended install not worth the effort
+  become: false
+
+
+# TODO: file picker
+
+# TODO: backup / restore dconf settings
+# wallpaper
+# user password
+# font scaling - inc bookwright

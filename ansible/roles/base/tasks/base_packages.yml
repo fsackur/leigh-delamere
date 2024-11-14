@@ -1,0 +1,66 @@
+---
+- set_fact:
+    base_packages: "{{
+      base_packages
+        | difference(
+          lookup('vars', ((ansible_facts.distribution | lower) + '_exclude'), default=[])
+        ) }}"
+  vars:
+    base_packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      # - software-properties-common  # not Fedora
+      - python3-pip
+      - virtualenv
+      - python3-setuptools
+      # - build-essential  # not Fedora
+      - procps
+      - file
+      - git
+      - jq  # not Debian
+      - yq
+      - nano
+      - xauth  # for ssh X11 forwarding
+      - fzf
+      - htop
+    debian_exclude:
+      - yq
+    fedora_exclude:
+      - software-properties-common
+      - build-essential
+
+- when: ansible_facts.distribution == "Ubuntu" or ansible_facts.distribution == "Debian"
+  block:
+    - name: upgrade packages
+      apt:
+        upgrade: "safe"
+        update_cache: true
+        autoremove: true
+
+    - name: install required packages
+      apt:
+        pkg: "{{ base_packages }}"
+        state: latest
+        update_cache: false
+        autoclean: true
+
+- when: ansible_facts.distribution == "Fedora"
+  block:
+    - name: install dnf5 python library
+      shell:
+        cmd: "dnf install -y dnf5 python3-libdnf5"
+        creates: /usr/share/licenses/python3-libdnf5
+
+    - name: upgrade packages
+      dnf:
+        update_cache: true
+        update_only: true
+        autoremove: true
+
+    - name: install required packages
+      dnf:
+        name: "{{ base_packages }}"
+        state: latest
+        update_cache: false

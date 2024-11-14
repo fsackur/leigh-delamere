@@ -1,0 +1,63 @@
+---
+- set_fact:
+    sshd_config_path: /etc/ssh/sshd_config.d/10-ansible.conf
+    sftp_subsytem_config: ""
+    sshd_state: "started"
+    authorized_keys: "{{ lookup('file', 'files/home/.ssh/authorized_keys') | split('\n') }}"
+
+- name: copy authorized_keys
+  lineinfile:
+    path: /home/{{ ansible_user }}/.ssh/authorized_keys
+    line: "{{ item }}"
+    create: true
+    state: present
+  become: false
+  when: ansible_user != 'root'
+  loop: "{{ authorized_keys }}"
+
+- name: test config
+  stat:
+    path: "{{ sshd_config_path }}"
+  register: sshd_config
+  failed_when: false
+  changed_when: false
+
+- when:  sshd_config.stat.exists
+  block:
+    - name: read sshd_config
+      shell:
+        cmd: grep -i -e ^Subsystem[[:space:]]sftp[[:space:]] /etc/ssh/sshd_config
+      register: sftp_subsystem
+      failed_when: false
+      changed_when: false
+
+    - when: sftp_subsystem.rc != 0
+      block:
+        - name: get sftp path
+          shell:
+            cmd: find /usr/lib* -name sftp-server
+          register: sftp_server
+          changed_when: false
+          failed_when: (sftp_server.stdout_lines | length) < 1
+
+        - set_fact:
+            sftp_subsytem_config: Subsystem sftp {{ sftp_server.stdout_lines[0] }}
+
+    - template:
+        src: files/ssh/sshd_config.d/10-ansible.conf.j2
+        dest: "{{ sshd_config_path }}"
+        lstrip_blocks: true
+        trim_blocks: true
+        mode: "0600"
+        owner: root
+        group: root
+      register: sshd_config_file
+
+    - set_fact:
+        sshd_state: "restarted"
+      when: sshd_config_file.changed
+
+- service:
+    name: sshd
+    enabled: true
+    state: "{{ sshd_state }}"

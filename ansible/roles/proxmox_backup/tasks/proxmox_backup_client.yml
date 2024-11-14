@@ -1,15 +1,15 @@
 ---
-- name: Add Proxmox GPG repo key
+- name: add proxmox gpg repo key
   apt_key:
     url: http://download.proxmox.com/debian/proxmox-release-bookworm.gpg
     state: present
 
-- name: Add Proxmox backup client repository
+- name: add proxmox backup client repository
   apt_repository:
     repo: deb http://download.proxmox.com/debian/pbs-client bookworm main
     state: present
 
-- name: Install Proxmox backup client
+- name: install proxmox backup client
   apt:
     pkg:
       - proxmox-backup-client
@@ -30,25 +30,25 @@
       server: backoops
       datastore: NVMe
 
-- name: Test backup password file
+- name: test backup password file
   stat:
     path: /root/.secrets/{{ proxmox_backup.passwd_file }}
   register: passwd_file
 
-- name: Assert that backup API token has been stored
+- name: assert that backup api token has been stored
   fail:
     msg: "Generate an API token for {{ proxmox_backup.username }} and store it at {{ proxmox_backup.passwd_file }}"
   ignore_errors: true
   when: not passwd_file.stat.exists or passwd_file.stat.size < 36
 
-- name: Create backup service directory
+- name: create backup service directory
   file:
     path: /etc/proxmox-backup
     state: directory
     mode: 0755
   register: service_dir
 
-- name: Generate backup client config
+- name: generate backup client config
   lineinfile:
     path: "{{ service_dir.path }}/proxmox-backup.env"
     regexp: ^{{ item.key }}=
@@ -58,27 +58,27 @@
     mode: 0755
   loop: "{{ proxmox_backup | dict2items }}"
 
-- name: Copy backup service script
+- name: copy backup service script
   copy:
     src: proxmox-backup.sh
     dest: "{{ service_dir.path }}"
     mode: 0755
 
-- name: Copy backup service configs
+- name: copy backup service configs
   template:
-    src: proxmox-backup.{{ item }}.j2
+    src: files/proxmox-backup.{{ item }}.j2
     dest: /etc/systemd/system/proxmox-backup.{{ item }}
   loop:
     - timer
     - service
 
-- name: Disable backup service
+- name: disable backup service
   systemd:
     name: proxmox-backup.service
     enabled: false
     daemon_reload: false
 
-- name: Start backup timer
+- name: start backup timer
   systemd:
     name: proxmox-backup.timer
     enabled: true
