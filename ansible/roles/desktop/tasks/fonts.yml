@@ -1,0 +1,35 @@
+---
+- name: declare required fonts
+  set_fact:
+    font_dir: /usr/local/share/fonts
+    fonts:
+      - Hack
+      - FiraCode
+      - Meslo
+
+- when: ansible_facts.distribution == "Ubuntu"
+  block:
+    - name: install fontconfig
+      apt:
+        pkg: fontconfig
+        state: latest
+
+- name: install fontconfig
+  package:
+    name: fontconfig
+    state: latest
+
+- name: install liberation fonts
+  package:
+    name: liberation-fonts
+    state: latest
+
+- name: ensure fonts directory
+  file:
+    path: "{{ font_dir }}"
+    state: directory
+
+- include_tasks: install_font.yml
+  loop: "{{ fonts }}"
+  loop_control:
+    loop_var: font

@@ -1,0 +1,7 @@
+all:
+  hosts:
+    harriet-desktop:
+      backup_schedule: "03:00"  # for testing: "*:00/1" => every 1 minute; systemd-analyze calendar --iterations=8 '03:00' | grep Iter
+    harriet-laptop:
+      backup_schedule: "10:00"
+    stevedore:

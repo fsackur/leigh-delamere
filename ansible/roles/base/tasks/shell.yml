@@ -1,0 +1,104 @@
+---
+- name: install xsel and xclip
+  package:
+    name:
+      - xsel
+      - xclip
+
+- name: create gitroot in home folder
+  file:
+    path: /home/{{ ansible_user }}/gitroot/upstream/
+    state: directory
+  become: false
+  when: ansible_user != 'root'
+
+- name: link /gitroot to gitroot in home folder
+  file:
+    path: /gitroot
+    src: /home/{{ ansible_user }}/gitroot
+    state: link
+    owner: "{{ ansible_user }}"
+  become: true
+  when: ansible_user != 'root'
+
+- name: install chezmoi
+  shell:
+    cmd: curl -fsLS get.chezmoi.io | sh -s -- -b /usr/local/bin
+    creates: /usr/local/bin/chezmoi
+
+- name: install starship
+  shell:
+    cmd: curl -fsLS starship.rs/install.sh | sh -s -- -y
+    creates: /usr/local/bin/starship
+
+- name: copy powershell config
+  copy:
+    src: files/powershell.config.json
+    dest: /opt/microsoft/powershell/7/
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: add powershell gpg apt key
+  rpm_key:
+    key: https://packages.microsoft.com/keys/microsoft.asc
+
+- name: add microsoft repository
+  copy:
+    src: files/yum.repos.d/microsoft-prod.repo
+    dest: /etc/yum.repos.d/microsoft-prod.repo
+    owner: root
+    group: root
+    mode: "0644"
+  register: microsoft_repo
+
+- name: install powershell
+  package:
+    name: powershell
+    state: latest
+    update_cache: "{{ microsoft_repo.changed }}"
+
+- name: disable powershell update banner
+  lineinfile:
+    path: /etc/environment
+    line: POWERSHELL_UPDATECHECK='Off'
+    insertafter: EOF
+    create: yes
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: init chezmoi
+  shell:
+    cmd: chezmoi init fsackur/dotfiles --ssh --recurse-submodules=false --apply --verbose
+    chdir: /home/{{ ansible_user }}
+    creates: /home/{{ ansible_user }}/.local/share/chezmoi
+  when: ansible_user == 'freddie'
+  become: false
+
+- name: link dotfiles to gitroot
+  file:
+    path: /home/{{ ansible_user }}/gitroot/dotfiles
+    src: /home/{{ ansible_user }}/.local/share/chezmoi
+    state: link
+    owner: "{{ ansible_user }}"
+  become: true
+  when: ansible_user == 'freddie'
+
+- name: create config folder for root user
+  file:
+    path: /root/.config/powershell/
+    state: directory
+    owner: root
+    group: root
+
+- name: add powershell profile to root user
+  copy:
+    content: ". /home/{{ ansible_user }}/.config/powershell/profile.ps1"
+    dest: /root/.config/powershell/profile.ps1
+    mode: "0755"
+
+- name: copy kitty terminfo
+  copy:
+    src: files/terminfo/
+    dest: /etc/terminfo/

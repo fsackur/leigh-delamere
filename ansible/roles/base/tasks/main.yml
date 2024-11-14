@@ -1,0 +1,17 @@
+---
+- name: distro not supported
+  when: not (ansible_facts.distribution == "Ubuntu" or ansible_facts.distribution == "Debian" or ansible_facts.distribution == "Fedora")
+  fail:
+    msg: "Unsupported distro: {{ ansible_facts.distribution }}"
+
+- import_tasks: sshd.yml
+  tags: sshd
+
+- import_tasks: user.yml
+  tags: user
+
+- import_tasks: base_packages.yml
+  tags: base_packages
+
+- import_tasks: shell.yml
+  tags: shell

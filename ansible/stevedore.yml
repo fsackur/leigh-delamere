@@ -1,0 +1,9 @@
+---
+- name: Docker host
+  hosts: stevedore
+  roles:
+    - role: docker
+      tags: docker
+    - role: unifi
+      tags: unifi
+  become: true

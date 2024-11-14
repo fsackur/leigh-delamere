@@ -1,0 +1,6 @@
+---
+- import_tasks: timeshift.yml
+  tags: timeshift
+
+- import_tasks: proxmox_backup_client.yml
+  tags: proxmox_backup_client

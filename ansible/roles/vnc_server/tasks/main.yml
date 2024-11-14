@@ -1,11 +1,8 @@
 ---
 - name: Install x11vnc
-  apt:
-    pkg:
+  package:
+    name:
       - x11vnc
-    state: latest
-    update_cache: false   # presumably done recently
-    autoclean: true
 
 - name: _
   set_fact:
@@ -19,7 +16,7 @@
 
 - name: Generate VNC password
   when: not vnc_passwd.stat.exists
-  include_tasks: generate_password.yml
+  include_tasks: ../common/generate_password.yml
   vars:
     purpose: VNC
     path: "{{ vnc_passwd_path }}"
@@ -33,7 +30,7 @@
 
 - name: Copy x11vnc service conf
   template:
-    src: x11vnc.service.j2
+    src: files/x11vnc.service.j2
     dest: /etc/systemd/system/x11vnc.service
 
 - name: Enable x11vnc service
