@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "**/files/**/*.yml": "yaml",
+        "**/files/**/*.yaml": "yaml",
+        "*.yml": "ansible",
+        "*.yaml": "ansible",
+        ".ansible-lint": "ansible",
+    },
+    "ansible.ansible.useFullyQualifiedCollectionNames": false,
+    "editor.defaultFormatter": "redhat.ansible",
+    "ansible.validation.lint.enabled": false,
+    "ansible.validation.lint.arguments": "-c .ansible-lint",
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible-lint-config.json": "file://${workspaceFolder}/.ansible-lint.yml"
+    },
+}
