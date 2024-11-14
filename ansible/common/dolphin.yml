@@ -1,0 +1,68 @@
+---
+
+# https://wiki.archlinux.org/title/Firefox#KDE_integration
+# https://wiki.archlinux.org/title/XDG_Desktop_Portal#List_of_backends_and_interfaces
+
+- name: Install dolphin and KDE portal
+  apt:
+    pkg:
+      - dolphin
+      - xdg-desktop-portal
+      - xdg-desktop-portal-kde
+
+# xdg-desktop-portal
+# xdg-desktop-portal:i386
+# xdg-desktop-portal-backend
+# xdg-desktop-portal-backend:i386
+# xdg-desktop-portal-dev
+# xdg-desktop-portal-gnome
+# xdg-desktop-portal-gtk
+# xdg-desktop-portal-gtk:i386
+# xdg-desktop-portal-kde
+# xdg-desktop-portal-lxqt
+# xdg-desktop-portal-tests
+# xdg-desktop-portal-wlr
+# xdg-desktop-portal-xapp
+# xdg-desktop-portal-xapp-dbg
+
+# apt install -y xdg-desktop-portal-gnome
+
+
+- set_fact:
+    mimeapps_path: /etc/xdg/mimeapps.list
+
+- name: create default app override file
+  copy:
+    force: false
+    dest: "{{ mimeapps_path }}"
+    content: "[Default Applications]"
+
+- name: set dolphin as default file manager
+  lineinfile:
+    path: "{{ mimeapps_path }}"
+    line: 'inode/directory=org.kde.dolphin.desktop'
+
+
+  # shell:
+  #   cmd: xdg-mime default org.kde.dolphin.desktop inode/directory application/x-gnome-saved-search
+# # xdg-mime query default inode/directory
+# # find /usr/share/applications/ -iname "*nemo*"
+
+- name: set file chooser
+  lineinfile:
+    path: /usr/share/xdg-desktop-portal/x-cinnamon-portals.conf
+    line: org.freedesktop.impl.portal.FileChooser=kde
+
+- set_fact:
+    firefox_prefs_path: /usr/lib/firefox/defaults/pref/local-settings.js
+
+- name: create firefox prefs file
+  copy:
+    force: false
+    dest: "{{ firefox_prefs_path }}"
+    content: "// system prefs"
+
+- name: set firefox prefs
+  lineinfile:
+    path: "{{ firefox_prefs_path }}"
+    line: 'pref("widget.use-xdg-desktop-portal.file-picker", 1);'

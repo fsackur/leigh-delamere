@@ -108,3 +108,5 @@
         cmd: wine /home/harriet/Downloads/BookWright.exe
       when: ansible_connection == 'local' and ansible_user == 'harriet'  # unattended install not worth the effort
       become: false
+
+    - include_tasks: ../common/dolphin.yml
