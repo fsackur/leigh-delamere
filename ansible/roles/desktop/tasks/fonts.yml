@@ -7,21 +7,12 @@
       - FiraCode
       - Meslo
 
-- when: ansible_facts.distribution == "Ubuntu"
-  block:
-    - name: install fontconfig
-      apt:
-        pkg: fontconfig
-        state: latest
-
-- name: install fontconfig
+- name: install fontconfig and mainline fonts
   package:
-    name: fontconfig
-    state: latest
-
-- name: install liberation fonts
-  package:
-    name: liberation-fonts
+    name:
+      - fontconfig
+      - liberation-fonts-all
+      - wine-fonts
     state: latest
 
 - name: ensure fonts directory

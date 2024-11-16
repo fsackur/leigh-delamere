@@ -2,9 +2,8 @@
 - import_tasks: user.yml
   tags: user
 
-# TODO
-# - include_tasks: fonts.yml
-#   tags: fonts
+- import_tasks: fonts.yml
+  tags: fonts
 
 # TODO
 # - name: Add VS Code repository
