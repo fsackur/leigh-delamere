@@ -1,0 +1,24 @@
+---
+- name: set GTK_USE_PORTAL var
+  lineinfile:
+    path: /etc/environment
+    line: GTK_USE_PORTAL=1
+
+- set_fact:
+    firefox_prefs_path: /etc/firefox/defaults/pref/local-settings.js
+
+- name: create firefox prefs folder
+  file:
+    path: "{{ firefox_prefs_path | replace('local-settings.js', '') }}"
+    state: directory
+
+- name: create firefox prefs file
+  copy:
+    force: false
+    dest: "{{ firefox_prefs_path }}"
+    content: "// system prefs"
+
+- name: set firefox prefs
+  lineinfile:
+    path: "{{ firefox_prefs_path }}"
+    line: 'pref("widget.use-xdg-desktop-portal.file-picker", 1);'

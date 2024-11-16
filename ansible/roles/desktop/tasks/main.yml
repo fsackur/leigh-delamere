@@ -8,7 +8,8 @@
 - import_tasks: apps.yml
   tags: apps
 
-# TODO: file picker
+- import_tasks: file_picker.yml
+  tags: file_picker
 
 # TODO: backup / restore dconf settings
 # wallpaper
