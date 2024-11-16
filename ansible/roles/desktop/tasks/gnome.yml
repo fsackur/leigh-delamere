@@ -36,6 +36,9 @@
       - name: Hide Top Bar
         id: hidetopbar@mathieu.bidon.ca
         user: harriet
+      - name: No overview at start-up
+        id: no-overview@fthx
+        user: harriet
   tags: gnome_shell_extensions
 
 - name: ensure extension folder
@@ -62,7 +65,8 @@
     user: harriet
     dconf_settings: |
       [org/gnome/shell]
-      enabled-extensions=['launch-new-instance@gnome-shell-extensions.gcampax.github.com', 'dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com']
+      enabled-extensions=['launch-new-instance@gnome-shell-extensions.gcampax.github.com', 'dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'no-overview@fthx']
+  tags: gnome_shell_extensions
 
 - name: configure extension settings for harriet
   include_tasks: set_dconf.yml
