@@ -56,7 +56,41 @@
     loop_var: extension
   tags: gnome_shell_extensions
 
+- name: enable extensions for harriet
+  include_tasks: set_dconf.yml
+  vars:
+    user: harriet
+    dconf_settings: |
+      [org/gnome/shell]
+      enabled-extensions=['launch-new-instance@gnome-shell-extensions.gcampax.github.com', 'dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com']
+
+- name: configure extension settings for harriet
+  include_tasks: set_dconf.yml
+  vars:
+    user: harriet
+    file: files/dconf/look-and-feel.conf
+
+- name: disable hot corners and dynamic workspaces
+  include_tasks: set_dconf.yml
+  vars:
+    user: harriet
+    file: files/dconf/activities-pane.conf
+
 - name: copy wallpapers
   copy:
     src: files/backgrounds/linuxmint-vanessa/
     dest: /usr/share/backgrounds/linuxmint-vanessa/
+
+- name: set wallpaper for freddie
+  include_tasks: set_dconf.yml
+  vars:
+    user: freddie
+    file: files/dconf/wallpaper.conf.j2
+    wallpaper_path: /usr/share/backgrounds/linuxmint-vanessa/hlightbulb_greece.jpg
+
+- name: set wallpaper for harriet
+  include_tasks: set_dconf.yml
+  vars:
+    user: harriet
+    file: files/dconf/wallpaper.conf.j2
+    wallpaper_path: /usr/share/backgrounds/linuxmint-vanessa/dhoefler_path.jpg
