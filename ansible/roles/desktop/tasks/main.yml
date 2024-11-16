@@ -1,14 +1,6 @@
 ---
-- name: Create user for Harriet
-  user:
-    name: harriet
-    state: present
-    expires: -1
-    createhome: true
-    # groups:  # TODO
-    #   - sudo
-    #   - nopasswdlogin
-    append: yes
+- import_tasks: user.yml
+  tags: user
 
 # TODO
 # - include_tasks: fonts.yml
@@ -59,5 +51,4 @@
 
 # TODO: backup / restore dconf settings
 # wallpaper
-# user password
 # font scaling - inc bookwright

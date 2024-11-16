@@ -1,0 +1,46 @@
+---
+- name: create nopasswdlogin group
+  group:
+    name: nopasswdlogin
+    system: true
+
+- name: grant passwordless login to nopasswdlogin group
+  lineinfile:
+    path: /etc/pam.d/gdm-password
+    line: "auth        sufficient    pam_succeed_if.so user ingroup nopasswdlogin"
+    insertbefore: BOF
+    backup: true
+
+- name: create user for harriet
+  user:
+    name: harriet
+    comment: Harriet
+    expires: -1
+    createhome: true
+    groups:
+      - wheel
+      - nopasswdlogin
+    append: true
+  register: create_account
+
+- name: reset harriet's password
+  user:
+    name: harriet
+    password: "{{ user_account.harriet.password | password_hash('sha512', 'idempotentsalt') }}"
+  no_log: true
+  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  tags:
+    - reset_password
+    - never
+
+- name: enable automatic timed login for harriet
+  shell:
+    cmd: grep TimedLogin {{ gdm_conf_path }} || sed -i 's/\[daemon\]/[daemon]\n{{ '\n'.join(timed_login_settings) }}/g' {{ gdm_conf_path }}
+  register: edit_gdm_custom_conf
+  changed_when: not edit_gdm_custom_conf.stdout
+  vars:
+    gdm_conf_path: /etc/gdm/custom.conf
+    timed_login_settings:
+      - TimedLoginEnable=true
+      - TimedLogin=harriet
+      - TimedLoginDelay=45
