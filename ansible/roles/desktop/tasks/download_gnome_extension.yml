@@ -1,11 +1,15 @@
 ---
 - name: ensure {{ extension.name }} folder exists
   file:
-    path: /usr/share/gnome-shell/extensions/{{ extension.id }}
+    path: "{{ extension_base }}/gnome-shell/extensions/{{ extension.id }}"
     state: directory
-    owner: root
-    group: root
+    owner: "{{ extension.user | default('root') }}"
+    group: "{{ extension.user | default('root') }}"
     mode: "0755"
+  vars:
+    extension_base: "{{
+      ('/home/' + extension.user + '/.local/share')
+      if extension.user is defined else '/usr/share' }}"
   register: extension_folder
 
 - when: extension_folder.changed and extension_folder.diff.before.state == "absent"

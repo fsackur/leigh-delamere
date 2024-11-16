@@ -20,40 +20,23 @@
     extensions:
       - name: PaperWM
         id: paperwm@paperwm.github.com
-        # pk: 6099
-      - name: Launch new instance
-        id: launch-new-instance@gnome-shell-extensions.gcampax.github.com
-        # pk: 600
+        user: freddie
       - name: Just Perfection
         id: just-perfection-desktop@just-perfection
-        # pk: 3843
-      - name: ArcMenu
-        id: arcmenu@arcmenu.com
-        # pk: 3628
-      - name: Hide Top Bar
-        id: hidetopbar@mathieu.bidon.ca
-        # pk: 545
+        user: freddie
       - name: User Themes
         id: user-theme@gnome-shell-extensions.gcampax.github.com
-        # pk: 19
-
-        # - name: TopIcons Plus
-        #   id: TopIcons@phocean.net
-        #   pk: 1031
-        # - name:
-        #   id: appindicatorsupport@rgcjonas.gmail.com
-        #   pk:
-        # - name:
-        #   id: dash-to-panel@jderose9.github.com
-        #   pk:
-
-          # https://extensions.gnome.org/extension/545/hide-top-bar/
-        # - name:
-        #   id: gnomenu@panacier.gmail.com
-        #   pk:
-        # - name:
-        #   id: remove-dropdown-arrows@mpdeimos.com
-        #   pk:
+        user: harriet
+      - name: Dash to Panel
+        id: dash-to-panel@jderose9.github.com
+        user: harriet
+      - name: ArcMenu
+        id: arcmenu@arcmenu.com
+        user: harriet
+      - name: Hide Top Bar
+        id: hidetopbar@mathieu.bidon.ca
+        user: harriet
+  tags: gnome_shell_extensions
 
 - name: ensure extension folder
   file:
@@ -62,33 +45,16 @@
     owner: root
     group: root
     mode: "0755"
+  tags: gnome_shell_extensions
 
-- include_tasks: download_gnome_extension.yml
+- include_tasks:
+    file: install_gnome_extension.yml
+    apply:
+      tags: gnome_shell_extensions
   loop: "{{ extensions }}"
   loop_control:
     loop_var: extension
-
-# - include_tasks: install_gnome_extension.yml
-#   loop: "{{ extensions.harriet }}"
-#   vars:
-#     user: harriet
-#   loop_control:
-#     loop_var: extension
-
-# - name: get enabled extensions
-#   shell:
-#     cmd: dconf read /org/gnome/shell/enabled-extensions
-#   register: enabled_extensions
-#   become: false
-
-# - debug: var=enabled_extensions
-
-# - debug: msg="{{ enabled_extensions.stdout | from_yaml | first }}"
-  # become: true
-  # become_user: harriet
-  # become_method: su
-  # vars:
-  #   ansible_become_password: "{{ user_account.harriet.password }}"
+  tags: gnome_shell_extensions
 
 - name: copy wallpapers
   copy:
