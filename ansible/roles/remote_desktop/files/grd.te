@@ -1,0 +1,9 @@
+module grd 1.0;
+require {
+    type system_dbusd_t;
+    type unconfined_service_t;
+    type xdm_t;
+    class tcp_socket { getattr getopt read setopt shutdown write };
+}
+allow system_dbusd_t unconfined_service_t:tcp_socket { read write };
+allow xdm_t unconfined_service_t:tcp_socket { getattr getopt read setopt shutdown write };

@@ -22,10 +22,10 @@
   roles:
     - role: base
       tags: base
-    - role: vnc_server
-      tags: vnc_server
     - role: proxmox_backup
       tags: proxmox_backup
     - role: desktop
       tags: desktop
+    - role: remote_desktop
+      tags: remote_desktop
   become: true

@@ -1,0 +1,123 @@
+---
+- name: check gnome-remote-desktop selinux policy
+  shell:
+    cmd: semodule -l | grep grd
+  register: grd_module_check
+  changed_when: false
+  failed_when: false
+
+- when: grd_module_check.rc != 0
+  block:
+    - name: copy gnome-remote-desktop selinux policy
+      copy:
+        src: files/grd.te
+        dest: /tmp/grd.te
+
+    - name: compile gnome-remote-desktop selinux policy
+      shell:
+        cmd: checkmodule -M -m -o /tmp/grd.mod /tmp/grd.te && semodule_package -o /tmp/grd.pp -m /tmp/grd.mod && rm /tmp/grd.te /tmp/grd.mod
+
+    - name: install gnome-remote-desktop selinux policy
+      shell:
+        cmd: semodule -i /tmp/grd.pp && rm /tmp/grd.pp
+
+- name: install winpr-makecert
+  package:
+    name: freerdp
+
+- set_fact:
+    rdp_cert_folder: /var/lib/gnome-remote-desktop/.local/share/gnome-remote-desktop/certificates/
+
+- name: ensure rdp folder
+  file:
+    path: "{{ rdp_cert_folder }}"
+    state: directory
+    owner: gnome-remote-desktop
+    group: gnome-remote-desktop
+
+- name: generate system rdp cert
+  shell:
+    cmd: sudo -u gnome-remote-desktop winpr-makecert -silent -rdp -n {{ ansible_hostname }}.leigh.delamere -path {{ rdp_cert_folder }} rdp-tls
+    creates: "{{ rdp_cert_folder }}/rdp-tls.crt"
+
+- name: configure system rdp
+  shell:
+    cmd: |
+      grdctl --system rdp enable && \
+      grdctl --system rdp disable-view-only && \
+      grdctl --system rdp set-tls-key {{ rdp_cert_folder }}/rdp-tls.key && \
+      grdctl --system rdp set-tls-cert {{ rdp_cert_folder }}/rdp-tls.crt
+
+- name: set system rdp password
+  shell:
+    cmd: grdctl --system rdp set-credentials harriet "{{ vnc[ansible_hostname].password }}"
+  no_log: true
+
+- name: enable system rdp
+  shell:
+    cmd: systemctl daemon-reload && systemctl enable --now gnome-remote-desktop
+
+- name: check for user desktop sharing
+  shell:
+    cmd: grep -Pzo "\[org/gnome/desktop/remote-desktop/rdp\]\nenable=true\nview-only=false" /home/harriet/.config/dconf/user.txt
+  register: rdp_desktop_sharing_conf
+  changed_when: false
+  failed_when: false
+
+- when: true #rdp_desktop_sharing_conf.rc != 0
+  become_user: harriet
+  vars:
+    ansible_become_password: "{{ user_account.harriet.password }}"
+  block:
+    - set_fact:
+        rdp_cert_folder: /home/harriet/.local/share/gnome-remote-desktop/certificates/
+
+    - name: ensure local certificate path
+      file:
+        path: "{{ rdp_cert_folder }}"
+        state: directory
+        owner: harriet
+        group: harriet
+
+    - name: generate user rdp cert
+      shell:
+        cmd: winpr-makecert -silent -rdp -n {{ ansible_hostname }}.leigh.delamere -path {{ rdp_cert_folder }} rdp-tls
+        creates: "{{ rdp_cert_folder }}/rdp-tls.crt"
+
+    - name: configure rdp desktop sharing
+      shell:
+        cmd: |
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
+          grdctl rdp enable && \
+          grdctl rdp disable-view-only && \
+          grdctl rdp set-tls-key {{ rdp_cert_folder }}/rdp-tls.key && \
+          grdctl rdp set-tls-cert {{ rdp_cert_folder }}/rdp-tls.crt
+
+    - name: set rdp desktop sharing password
+      shell:
+        cmd: |
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
+          grdctl rdp set-credentials harriet "{{ vnc[ansible_hostname].password }}"
+      no_log: true
+
+    - name: configure vnc desktop sharing
+      shell:
+        cmd: |
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
+          grdctl vnc enable && \
+          grdctl vnc disable-view-only && \
+          grdctl vnc set-auth-method prompt
+      # As of gnome 47.1, setting VNC password causes segfault
+      #
+      # grdctl vnc set-auth-method password
+      # export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
+      # grdctl vnc set-password "{{ vnc[ansible_hostname].password }}"
+      #
+      # no_log: true  # always set no_log on tasks dealing with secrets
+
+    - name: enable desktop sharing
+      shell:
+        cmd: |
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
+          systemctl --user daemon-reload && \
+          systemctl --user enable --now gnome-remote-desktop

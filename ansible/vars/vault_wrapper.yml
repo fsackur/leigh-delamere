@@ -1,3 +1,6 @@
 user_account:
   harriet:
     password: "{{ vault.user_account.harriet.password }}"
+vnc:
+  harriet-desktop:
+    password: "{{ vault.vnc['harriet-desktop'].password }}"
