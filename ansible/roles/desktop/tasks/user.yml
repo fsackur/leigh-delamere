@@ -44,3 +44,11 @@
       - TimedLoginEnable=true
       - TimedLogin=harriet
       - TimedLoginDelay=45
+
+- name: disable screen lock for harriet
+  include_tasks: set_dconf.yml
+  vars:
+    user: harriet
+    dconf_settings: |
+      [org/gnome/desktop/screensaver]
+      lock-enabled=false

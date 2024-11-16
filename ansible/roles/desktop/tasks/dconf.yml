@@ -1,69 +1,23 @@
 ---
-# # - name: dump dconf settings
-# #   shell:
-# #     cmd: dconf dump / > /tmp/dconf.ini
-# #   become: false
+- name: install dconf-editor
+  package:
+    name: dconf-editor
+    state: present
 
-# # - name: back up dconf settings
-# #   fetch:
-# #     src: /tmp/dconf.ini
-# #     dest: backup/dconf-{{ ansible_hostname }}-{{ lookup('pipe', 'date +%Y%m%d%H%M%S') }}.ini
-# #     flat: true
-
-##### none of this worked, because dbus always fails to launch
-# # # - shell:
-# # #     cmd: |
-# # #       [ -f ~/.config/dconf/user-harriet ] || ln -s /home/harriet/.config/dconf/user ~/.config/dconf/user-harriet
-# # #       echo "user-db:user-harriet" > ~/.config/dconf/harriet-profile
-# # #       export DCONF_PROFILE="/root/.config/dconf/harriet-profile"
-# # #       # dconf dump /org/gnome/desktop/screensaver/
-# # #       dconf write /org/gnome/desktop/screensaver/lock-enabled false
-# # #   register: foo
-
-# # # TODO: needs interactive login?
-# # # - name: disable screen lock
-# # #   # dconf:
-# # #   #   key: /org/gnome/desktop/screensaver/lock-enabled
-# # #   #   value: false
-# # #   shell:
-# # #     # cmd: id
-# # #     # cmd: dconf write /org/gnome/desktop/screensaver/lock-enabled false
-# # #     # cmd: export XDG_CONFIG_DIR=/run/user/1001; dconf write /org/gnome/desktop/screensaver/lock-enabled false
-# # #     # cmd: echo $DISPLAY
-# # #     cmd: su - harriet -c "bash -c DISPLAY=$DISPLAY dconf write /org/gnome/desktop/screensaver/lock-enabled false"
-
-# # #   # become: true
-# # #   # become_user: harriet
-# # #   # become_method: su
-# # #   # vars:
-# # #   #   ansible_become_password: "{{ user.harriet.password }}"
-# # #   register: foo
-
-
-##### none of this worked, because no file sets DCONF_PROFILE when it's needed except /etc/environment
-# - copy:  # https://man.archlinux.org/man/dconf.7.en
-#     dest: /home/harriet/.config/dconf/profile
-#     content: service-db:keyfile/user
-#     owner: harriet
-#     group: harriet
-
-# - lineinfile:  # https://linux.die.net/man/5/pam_env.conf
-#     path: /home/harriet/.pam_environment
-#     line: DCONF_PROFILE  DEFAULT=/home/harriet/.config/dconf/profile
-#     create: true
-#     owner: harriet
-#     group: harriet
+- name: ensure dconf text overlay is present
+  copy:
+    content: ""
+    force: false
+    dest: /home/{{ item }}/.config/dconf/user.txt
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0644"
+  loop:
+    - freddie
+    - harriet
 
 - name: set dconf to use text file overlay over binary blob
   lineinfile:
     path: /etc/dconf/profile/user
     line: service-db:keyfile/user
     insertbefore: BOF
-
-- name: copy dconf settings
-  copy:
-    src: files/dconf.conf
-    dest: /home/harriet/.config/dconf/user.txt
-    owner: harriet
-    group: harriet
-    mode: "0644"

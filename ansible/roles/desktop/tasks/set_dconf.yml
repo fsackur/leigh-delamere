@@ -1,0 +1,14 @@
+---
+- name: read dconf from {{ user }}
+  slurp:
+    src: /home/{{ user }}/.config/dconf/user.txt
+  register: dconf_content
+
+- name: update dconf for {{ user }}
+  copy:
+    content: "{{ dconf_content.content | merge_slurped(update=update) }}"
+    dest: /home/{{ user }}/.config/dconf/user.txt
+  vars:
+    update: "{{
+      dconf_settings if dconf_settings is defined else
+        lookup('template', file) }}"
