@@ -1,0 +1,38 @@
+---
+- name: add microsoft repository
+  copy:
+    src: files/vscode.repo
+    dest: /etc/yum.repos.d/vscode.repo
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: install base packages
+  package:
+    name:
+      - kitty
+      - dirmngr
+      - mc
+      - code
+      - fontconfig
+      - gparted
+      - wine
+    state: latest
+
+- name: install flatpaks
+  flatpak:
+    name:
+      - us.zoom.Zoom
+    method: system
+
+- name: download bookwright installer
+  get_url:
+    url: https://software.blurb.com/bookwright_v2/3.0.2/BookWright.exe
+    dest: /home/harriet/Downloads/BookWright.exe
+    mode: 0777
+
+# - name: install bookwright
+#   shell:
+#     cmd: wine /home/harriet/Downloads/BookWright.exe
+#   when: ansible_connection == 'local' and ansible_user == 'harriet'  # unattended install not worth the effort
+#   become: false
