@@ -1,0 +1,41 @@
+---
+- name: ensure {{ extension.name }} folder exists
+  file:
+    path: /usr/share/gnome-shell/extensions/{{ extension.id }}
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  register: extension_folder
+
+- when: extension_folder.changed and extension_folder.diff.before.state == "absent"
+  block:
+    - when: gnome_shell_version is undefined
+      block:
+        - name: get gnome shell version
+          shell:
+            cmd: gnome-shell --version
+          register: gnome_shell_version_result
+          changed_when: false
+
+        - set_fact:
+            gnome_shell_version: "{{
+              gnome_shell_version_result.stdout
+              | regex_replace('GNOME Shell\\s*', '', ignorecase=True)
+              | regex_replace('\\..*', '') }}"
+
+    - name: get {{ extension.name }} version
+      uri:
+        url: https://extensions.gnome.org/extension-query/?uuid={{ extension.id }}
+        return_content: true
+      register: search_result
+
+    - name: download {{ extension.name }}
+      unarchive:
+        remote_src: true
+        src: https://extensions.gnome.org/api/v1/extensions/{{ extension.id }}/versions/{{ version }}/?format=zip
+        dest: "{{ extension_folder.path }}"
+        owner: root
+        group: root
+      vars:
+        version: "{{ search_result.json.extensions[0].shell_version_map[gnome_shell_version].version }}"

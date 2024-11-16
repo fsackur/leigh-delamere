@@ -1,0 +1,12 @@
+---
+
+#
+# WARNING: this will prompt on the desktop.
+# If you are not logged in, it will time out.
+#
+
+- name: install {{ extension.name }}
+  command:
+    cmd: busctl --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell.Extensions InstallRemoteExtension s {{ extension.id }}
+    creates: /home/{{ user }}/.local/share/gnome-shell/extensions/{{ extension.id }}
+  become_user: "{{ user }}"

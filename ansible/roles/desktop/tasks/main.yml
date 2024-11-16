@@ -11,6 +11,9 @@
 - import_tasks: file_picker.yml
   tags: file_picker
 
+- import_tasks: gnome.yml
+  tags: gnome
+
 # TODO: backup / restore dconf settings
 # wallpaper
 # font scaling - inc bookwright
