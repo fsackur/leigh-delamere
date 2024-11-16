@@ -17,6 +17,8 @@
       - fontconfig
       - gparted
       - wine
+      - winetricks
+      - wineglass
     state: latest
 
 - name: install flatpaks
@@ -25,14 +27,42 @@
       - us.zoom.Zoom
     method: system
 
-- name: download bookwright installer
-  get_url:
-    url: https://software.blurb.com/bookwright_v2/3.0.2/BookWright.exe
-    dest: /home/harriet/Downloads/BookWright.exe
-    mode: 0777
+- name: test bookwright installation
+  stat:
+    path: /home/harriet/.wine/drive_c/Program Files/BookWright/BookWright.exe
+  register: bookwright_exe_path
+  tags: wine
 
-# - name: install bookwright
-#   shell:
-#     cmd: wine /home/harriet/Downloads/BookWright.exe
-#   when: ansible_connection == 'local' and ansible_user == 'harriet'  # unattended install not worth the effort
-#   become: false
+- when: not bookwright_exe_path.stat.exists
+  become_user: harriet
+  vars:
+    ansible_become_password: "{{ user_account.harriet.password }}"
+  block:
+    - name: init winecfg and generate wine prefix (may not work first time, try rebooting)
+      shell:
+        cmd: winecfg /v
+        creates: /home/harriet/.wine/user.reg
+
+    - name: download bookwright installer
+      get_url:
+        url: https://software.blurb.com/bookwright_v2/3.3.0/BookWright.exe
+        dest: /home/harriet/Downloads/BookWright.exe
+        owner: harriet
+        group: harriet
+        mode: 0777
+
+    - set_fact:
+        should_try_install: "{{ ansible_connection == 'local' and ansible_user == 'harriet' }}"  # unattended install not worth the effort
+        install_command: wine /home/harriet/Downloads/BookWright.exe /SILENT
+
+    - name: install bookwright
+      when: should_try_install
+      shell:
+        cmd: "{{ install_command }}"
+      become: false
+
+    - when: not should_try_install
+      fail:
+        msg: "Log on to the desktop as harriet and run: {{ install_command }}"
+
+  tags: wine
