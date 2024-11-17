@@ -8,13 +8,12 @@
   copy:
     content: ""
     force: false
-    dest: /home/{{ item }}/.config/dconf/user.txt
-    owner: "{{ item }}"
-    group: "{{ item }}"
+    dest: /home/{{ user_ }}/.config/dconf/user.txt
+    owner: "{{ user_ }}"
+    group: "{{ user_ }}"
     mode: "0644"
-  loop:
-    - freddie
-    - harriet
+  vars:
+    user_: "{{ user | default(ansible_user) }}"
 
 - name: set dconf to use text file overlay over binary blob
   lineinfile:

@@ -33,6 +33,11 @@
     - reset_password
     - never
 
+- name: set dconf text overlay for harriet
+  import_tasks: dconf.yml
+  vars:
+    user: harriet
+
 - name: enable automatic timed login for harriet
   shell:
     cmd: grep TimedLogin {{ gdm_conf_path }} || sed -i 's/\[daemon\]/[daemon]\n{{ '\n'.join(timed_login_settings) }}/g' {{ gdm_conf_path }}
