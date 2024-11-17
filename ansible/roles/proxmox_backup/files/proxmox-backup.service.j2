@@ -3,7 +3,7 @@ Description=Proxmox backup
 Requires=network-online.target
 After=multi-user.target network-online.target
 StartLimitBurst=5
-StartLimitInterval=200
+StartLimitIntervalSec=200
 # Will not restart any more after StartLimitBurst times,
 # because (StartLimitBurst * RestartSec) < StartLimitInterval
 
@@ -12,7 +12,7 @@ Type=oneshot
 RemainAfterExit=false
 Restart=on-failure
 RestartSec=30
-LoadCredential={{ proxmox_backup.passwd_file }}:/root/.secrets/{{ proxmox_backup.passwd_file }}
+LoadCredential={{ proxmox_backup.passwd_file }}:{{ service_path }}/{{ proxmox_backup.passwd_file }}
 WorkingDirectory=%E/proxmox-backup
 EnvironmentFile=%E/proxmox-backup/proxmox-backup.env
 ExecStart=/bin/systemd-inhibit --why=backup %E/proxmox-backup/proxmox-backup.sh

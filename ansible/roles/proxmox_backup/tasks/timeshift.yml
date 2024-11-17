@@ -1,4 +1,8 @@
 ---
+- name: install timeshift
+  package:
+    name: timeshift
+
 - name: get timeshift partition uuid
   shell:
     cmd: lsblk -o NAME,LABEL,UUID | grep timeshift | awk '{print $NF}'
@@ -31,6 +35,6 @@
   lineinfile:
     path: /etc/fstab
     regexp: ^UUID={{ timeshift_partition_uuid }}
-    line: UUID={{ timeshift_partition_uuid }} /timeshift      ext4    nofail          0       99
+    line: "UUID={{ timeshift_partition_uuid }} /timeshift              ext4    nofail          0       99"
     insertafter: EOF
     state: present

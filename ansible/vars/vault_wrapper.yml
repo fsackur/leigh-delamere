@@ -1,6 +1,13 @@
+#
+# The purpose of this file is to show what's in vault.yml
+#
 user_account:
   harriet:
     password: "{{ vault.user_account.harriet.password }}"
 vnc:
   harriet-desktop:
     password: "{{ vault.vnc['harriet-desktop'].password }}"
+backup:
+  harriet-desktop:
+    username: "{{ vault.backup['harriet-desktop'].username }}"
+    api_token: "{{ vault.backup['harriet-desktop'].api_token }}"

@@ -10,15 +10,15 @@ backup_name="${backup_name:-harriet-home.pxar}"
 backup_root="${backup_root:-/home/harriet/}"
 include_timeshift="${include_timeshift:-false}"
 timeshift_path="${timeshift_path:-/timeshift/}"
-passwd_file="${passwd_file:-proxmox_backup_passwd}"
+passwd_file="${passwd_file:-proxmox-backup-passwd}"
 username="${username:-backup_user@pbs}"
 token_name="${token_name:-$(hostname)}"
-server="${server:-backoops}"
+server="${server:-backoops.leigh.delamere}"
 datastore="${datastore:-NVMe}"
 
 if [ ! -f $passwd_file ]; then
-    # set by systemd, defaults to /root/.secrets
-    CREDENTIALS_DIRECTORY="${CREDENTIALS_DIRECTORY:-/root/.secrets/}"
+    # set by systemd, defaults to /etc/proxmox-backup/
+    CREDENTIALS_DIRECTORY="${CREDENTIALS_DIRECTORY:-/etc/proxmox-backup/}"
     passwd_file="$CREDENTIALS_DIRECTORY/$passwd_file"
 fi
 
