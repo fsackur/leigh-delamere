@@ -98,3 +98,17 @@
     user: harriet
     file: files/dconf/wallpaper.conf.j2
     wallpaper_path: /usr/share/backgrounds/linuxmint-vanessa/dhoefler_path.jpg
+
+- name: copy avatar
+  copy:
+    src: files/icons/{{ item.src }}
+    dest: "{{ item.dest }}"
+  loop:
+    - src: coffee-512x512.png
+      dest: /var/lib/AccountsService/icons/freddie
+    - src: monkey-puzzle.png
+      dest: /usr/share/pixmaps/faces/
+    - src: monkey-puzzle-512x512.png
+      dest: /var/lib/AccountsService/icons/harriet
+    - src: AccountsService.harriet.ini
+      dest: /var/lib/AccountsService/users/harriet
