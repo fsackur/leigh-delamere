@@ -9,6 +9,7 @@
       - gnome-tweak-tool
       - gnome-menus
       - xdg-utils
+      - gnome-monitor-config  # only works while there's an interactive session. Just set it manually.
 
 - name: install extension manager
   flatpak:

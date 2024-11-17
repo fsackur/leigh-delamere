@@ -16,6 +16,3 @@
 
 - import_tasks: gnome.yml
   tags: gnome
-
-# TODO:
-# font scaling - inc bookwright
