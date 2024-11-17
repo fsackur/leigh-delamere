@@ -6,7 +6,6 @@
       - gnome-shell-extension-launch-new-instance
       - gnome-shell-extension-dash-to-panel
       - gnome-shell-extension-user-theme
-      - gnome-tweak-tool
       - gnome-menus
       - xdg-utils
       - gnome-monitor-config  # only works while there's an interactive session. Just set it manually.
@@ -113,3 +112,11 @@
       dest: /var/lib/AccountsService/icons/harriet
     - src: AccountsService.harriet.ini
       dest: /var/lib/AccountsService/users/harriet
+
+# Created with GDM Settings app
+# https://github.com/orgs/gdm-settings/discussions/87
+- name: set login background
+  copy:
+    src: files/themes/gnome-shell-theme.gresource
+    dest: /usr/share/gnome-shell/gnome-shell-theme.gresource
+    backup: true
