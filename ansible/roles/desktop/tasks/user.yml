@@ -1,4 +1,11 @@
 ---
+- name: install utils
+  package:
+    name:
+      - clevis
+      - seahorse
+      - pam_script
+
 - name: create nopasswdlogin group
   group:
     name: nopasswdlogin
@@ -10,6 +17,14 @@
     line: "auth        sufficient    pam_succeed_if.so user ingroup nopasswdlogin"
     insertbefore: BOF
     backup: true
+
+- name: copy encryption tool
+  copy:
+    src: files/gnome-keyring-unlock/encrypt-passwd.sh
+    dest: /usr/local/bin/encrypt-passwd
+    owner: root
+    group: root
+    mode: "0755"
 
 - name: create user for harriet
   user:
@@ -28,6 +43,19 @@
     name: harriet
     password: "{{ user_account.harriet.password | password_hash('sha512', 'idempotentsalt') }}"
   no_log: true
+  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  tags:
+    - reset_password
+    - never
+
+- name: encrypt password for keyring unlocker
+  shell:
+    cmd: /usr/local/bin/encrypt-passwd "{{ passwd }}" > {{ user_passwd_file }}
+  no_log: true
+  become_user: harriet
+  vars:
+    passwd: "{{ user_account.harriet.password }}"
+    user_passwd_file: /home/harriet/.passwd-tpm
   when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
   tags:
     - reset_password
@@ -64,19 +92,6 @@
       [org/gnome/desktop/screensaver]
       lock-enabled=false
 
-- name: install clevis and seahorse
-  package:
-    name:
-      - clevis
-      - seahorse
-
-- name: install umglurf's gnome-keyring-unlock tool
-  git:
-    accept_newhostkey: true
-    depth: 1
-    dest: /usr/local/bin/gnome-keyring-unlock-umglurf
-    repo: https://codeberg.org/umglurf/gnome-keyring-unlock
-
 - name: grant harriet sudo to decrypt with tpm
   template:
     src: files/gnome-keyring-unlock/20-tss.j2
@@ -86,6 +101,13 @@
     mode: "0600"
   vars:
     user: harriet
+
+- name: install umglurf's gnome-keyring-unlock tool
+  git:
+    accept_newhostkey: true
+    depth: 1
+    dest: /usr/local/bin/gnome-keyring-unlock-umglurf
+    repo: https://codeberg.org/umglurf/gnome-keyring-unlock
 
 - name: copy gnome-keyring-unlock tool
   copy:
@@ -123,13 +145,35 @@
   changed_when: enable_gnome_keyring_unlock.stderr
   become_user: harriet
 
-- name: encrypt password
-  shell:
-    cmd: sudo -u tss clevis-encrypt-tpm2 '{"pcr_ids":"7"}' <<<"{{ passwd }}" > {{ user_passwd_file }}
-  no_log: true
-  become_user: harriet
-  vars:
-    passwd: "{{ user_account.harriet.password }}"
-    user_passwd_file: /home/harriet/.passwd-tpm
+- include_tasks: ../../common/install_selinux_policy.yml
+  loop:
+    - passwd-write-home
+    - passwd-sudo
+    - passwd-sudo-map
+    - passwd-tpm
+  loop_control:
+    loop_var: selinux_module
 
-# on pw change: https://github.com/jeroennijhof/pam_script
+- name: copy pam script
+  copy:
+    src: files/gnome-keyring-unlock/tpm-passwd.sh
+    dest: /etc/pam-script.d/tpm_passwd
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: call password encryption in passwd pam module
+  lineinfile:
+    path: /etc/pam.d/passwd
+    regexp: "password\\s+optional\\s+pam_script.so"
+    line: "password   optional     pam_script.so    # invokes /etc/pam-script.d/*_passwd"
+    insertbefore: "^\\s*-?password\\s+optional\\s+pam_gnome_keyring.so\\s+use_authtok"
+    backup: true
+
+- name: call password encryption only for nopasswdlogin group
+  lineinfile:
+    path: /etc/pam.d/passwd
+    regexp: "password\\s.*\\spam_succeed_if.so \\w+ user ingroup nopasswdlogin"
+    line: "password [default=1 success=ignore] pam_succeed_if.so quiet user ingroup nopasswdlogin"
+    insertbefore: "password\\s+optional\\s+pam_script.so"
+    backup: true

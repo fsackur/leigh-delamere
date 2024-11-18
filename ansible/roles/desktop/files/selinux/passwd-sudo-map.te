@@ -1,0 +1,15 @@
+module passwd-sudo-map 1.0;
+
+require {
+        type user_home_t;
+        type ptmx_t;
+        type passwd_t;
+        type sudo_exec_t;
+        class file { ioctl map };
+        class chr_file { ioctl open read write };
+}
+
+#============= passwd_t ==============
+allow passwd_t ptmx_t:chr_file { ioctl open read write };
+allow passwd_t sudo_exec_t:file map;
+allow passwd_t user_home_t:file ioctl;

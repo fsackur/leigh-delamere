@@ -1,0 +1,17 @@
+module passwd-write-home 1.0;
+
+require {
+        type unlabeled_t;
+        type passwd_t;
+        type user_home_t;
+        type home_root_t;
+        type xdm_t;
+        class file { open read write };
+}
+
+#============= passwd_t ==============
+allow passwd_t home_root_t:file write;
+allow passwd_t user_home_t:file { open write };
+
+#============= xdm_t ==============
+allow xdm_t unlabeled_t:file read;

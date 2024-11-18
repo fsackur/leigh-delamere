@@ -1,0 +1,10 @@
+module passwd-sudo 1.0;
+
+require {
+        type passwd_t;
+        type sudo_exec_t;
+        class file { open getattr read execute execute_no_trans };
+}
+
+#============= passwd_t ==============
+allow passwd_t sudo_exec_t:file { open getattr read execute execute_no_trans };

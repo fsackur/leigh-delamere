@@ -1,25 +1,7 @@
 ---
-- name: check gnome-remote-desktop selinux policy
-  shell:
-    cmd: semodule -l | grep grd
-  register: grd_module_check
-  changed_when: false
-  failed_when: false
-
-- when: grd_module_check.rc != 0
-  block:
-    - name: copy gnome-remote-desktop selinux policy
-      copy:
-        src: files/grd.te
-        dest: /tmp/grd.te
-
-    - name: compile gnome-remote-desktop selinux policy
-      shell:
-        cmd: checkmodule -M -m -o /tmp/grd.mod /tmp/grd.te && semodule_package -o /tmp/grd.pp -m /tmp/grd.mod && rm /tmp/grd.te /tmp/grd.mod
-
-    - name: install gnome-remote-desktop selinux policy
-      shell:
-        cmd: semodule -i /tmp/grd.pp && rm /tmp/grd.pp
+- include_tasks: ../../common/install_selinux_policy.yml
+  vars:
+    selinux_module: gnome-remote-desktop
 
 - name: install winpr-makecert
   package:

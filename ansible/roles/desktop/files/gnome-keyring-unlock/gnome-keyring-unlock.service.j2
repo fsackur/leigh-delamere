@@ -1,5 +1,14 @@
 [Unit]
 Description=GNOME Keyring unlocker for passwordless login
+#
+# With automatic login, the password never passes down the PAM stack
+# to pam_gnome_keyring, so the login keyring does not get unlocked.
+# This causes a user prompt on access.
+# The usual solution is to set a blank password on the logon keyring.
+# We hope to do better.
+#
+# https://docs.leigh.delamere.dvlp.casa
+#
 Requires=gnome-keyring-daemon.socket
 After=gnome-keyring-daemon.service
 ReloadPropagatedFrom=gnome-keyring-daemon.service

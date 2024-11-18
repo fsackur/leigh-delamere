@@ -1,0 +1,41 @@
+---
+# SELinux policies
+#
+# To generate policy templates (.te files),
+#   - install setroubleshoot
+#   - systemctl enable --now setroubleshootd
+#   - do the thing
+#   - systemctl status setroubleshootd
+# The setroubleshootd output will give you a line to invoke, e.g.:
+#     ausearch -c 'sudo' --raw | audit2allow -M my-sudo
+#
+# To have ansible update policy, uninstall the old policy with:
+#     semodule -r <selinux_module>
+#
+
+- name: check {{ selinux_module }} selinux policy
+  shell:
+    cmd: semodule -l | grep {{ selinux_module }}
+  register: module_check
+  changed_when: false
+  failed_when: false
+
+- when: module_check.rc != 0
+  block:
+    - name: copy {{ selinux_module }} selinux policy
+      copy:
+        src: files/selinux/{{ selinux_module }}.te
+        dest: /tmp/{{ selinux_module }}.te
+
+    - name: compile {{ selinux_module }} selinux policy
+      shell:
+        cmd: |
+          checkmodule -M -m -o /tmp/{{ selinux_module }}.mod /tmp/{{ selinux_module }}.te && \
+          semodule_package -o /tmp/{{ selinux_module }}.pp -m /tmp/{{ selinux_module }}.mod && \
+          rm /tmp/{{ selinux_module }}.te /tmp/{{ selinux_module }}.mod
+
+    - name: install {{ selinux_module }} selinux policy
+      shell:
+        cmd: |
+          semodule -i /tmp/{{ selinux_module }}.pp && \
+          rm /tmp/{{ selinux_module }}.pp

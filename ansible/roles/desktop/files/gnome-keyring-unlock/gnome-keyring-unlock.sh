@@ -13,15 +13,16 @@
 #
 
 doc_url="https://docs.leigh.delamere.dvlp.casa"
+
 arg1="$1"
 
 set -euo pipefail
 
 help_msg=$"Usage: $0 PASSWD_FILE_ENCRYPTED\n    PASSWD_FILE_ENCRYPTED: file encrypted with clevis-encrypt-tpm2"
-if [[ "$arg1" == "-h" || "$arg1" == "--help" ]]; then
+if [ "$arg1" == "-h" ] || [ "$arg1" == "--help" ]; then
     echo -e "$help_msg"
     exit 0
-elif [[ ! -f "$arg1" ]]; then
+elif [ ! -f "$arg1" ]; then
     echo -e "$help_msg" >&2
     exit 1
 fi

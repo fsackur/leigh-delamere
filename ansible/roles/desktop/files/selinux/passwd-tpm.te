@@ -1,0 +1,10 @@
+module passwd-tpm 1.0;
+
+require {
+        type tpm_device_t;
+        type passwd_t;
+        class chr_file { open read write };
+}
+
+#============= passwd_t ==============
+allow passwd_t tpm_device_t:chr_file { open read write };
