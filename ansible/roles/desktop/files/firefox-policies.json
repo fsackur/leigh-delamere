@@ -1,0 +1,10 @@
+{
+    "policies": {
+        "Preferences": {
+            "dom.private-attribution.submission.enabled": {
+                "Value": false,
+                "Status": "locked"
+            }
+        }
+    }
+}

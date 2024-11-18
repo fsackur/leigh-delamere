@@ -11,8 +11,8 @@
 - import_tasks: apps.yml
   tags: apps
 
-- import_tasks: file_picker.yml
-  tags: file_picker
+- import_tasks: firefox.yml
+  tags: firefox
 
 - import_tasks: gnome.yml
   tags: gnome

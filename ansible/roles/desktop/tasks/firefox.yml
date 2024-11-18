@@ -1,0 +1,34 @@
+---
+- name: set GTK_USE_PORTAL var
+  lineinfile:
+    path: /etc/environment
+    line: GTK_USE_PORTAL=1
+
+- set_fact:
+    firefox_pref_path: /etc/firefox/defaults/pref/local-settings.js
+    firefox_policy_path: /etc/firefox/policies/policies.json
+
+- name: create firefox folders
+  file:
+    path: "{{ item | dirname }}"
+    state: directory
+  loop:
+    - "{{ firefox_pref_path }}"
+    - "{{ firefox_policy_path }}"
+
+- name: create firefox prefs file
+  copy:
+    force: false
+    dest: "{{ firefox_pref_path }}"
+    content: "// system prefs"
+
+- name: set firefox prefs
+  lineinfile:
+    path: "{{ firefox_pref_path }}"
+    line: 'pref("widget.use-xdg-desktop-portal.file-picker", 1);'
+
+- name: copy firefox policy file
+  copy:
+    force: false
+    src: files/firefox-policies.json
+    dest: "{{ firefox_policy_path }}"
