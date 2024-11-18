@@ -1,0 +1,20 @@
+[Unit]
+Description=GNOME Keyring unlocker for passwordless login
+Requires=gnome-keyring-daemon.socket
+After=gnome-keyring-daemon.service
+ReloadPropagatedFrom=gnome-keyring-daemon.service
+Documentation=https://docs.leigh.delamere.dvlp.casa
+StartLimitBurst=3
+StartLimitIntervalSec=180
+# Will not restart any more after StartLimitBurst times,
+# because (StartLimitBurst * RestartSec) < StartLimitInterval
+
+[Service]
+Type=simple
+StandardError=journal
+Restart=on-failure
+RestartSec=5
+ExecStart=/usr/local/bin/gnome-keyring-unlock {{ user_passwd_file }}
+
+[Install]
+WantedBy=gnome-session.target

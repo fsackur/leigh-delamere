@@ -33,10 +33,16 @@
     - reset_password
     - never
 
-- name: set dconf text overlay for harriet
-  import_tasks: dconf.yml
+- name: ensure dconf text overlay is present
+  copy:
+    content: ""
+    force: false
+    dest: /home/{{ user_ }}/.config/dconf/user.txt
+    owner: "{{ user_ }}"
+    group: "{{ user_ }}"
+    mode: "0644"
   vars:
-    user: harriet
+    user_: harriet
 
 - name: enable automatic timed login for harriet
   shell:
@@ -57,3 +63,73 @@
     dconf_settings: |
       [org/gnome/desktop/screensaver]
       lock-enabled=false
+
+- name: install clevis and seahorse
+  package:
+    name:
+      - clevis
+      - seahorse
+
+- name: install umglurf's gnome-keyring-unlock tool
+  git:
+    accept_newhostkey: true
+    depth: 1
+    dest: /usr/local/bin/gnome-keyring-unlock-umglurf
+    repo: https://codeberg.org/umglurf/gnome-keyring-unlock
+
+- name: grant harriet sudo to decrypt with tpm
+  template:
+    src: files/gnome-keyring-unlock/20-tss.j2
+    dest: /etc/sudoers.d/20-tss
+    owner: root
+    group: root
+    mode: "0600"
+  vars:
+    user: harriet
+
+- name: copy gnome-keyring-unlock tool
+  copy:
+    src: files/gnome-keyring-unlock/gnome-keyring-unlock.sh
+    dest: /usr/local/bin/gnome-keyring-unlock
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: ensure user service folder
+  file:
+    path: /home/harriet/.config/systemd/user
+    state: directory
+    owner: harriet
+    group: harriet
+    mode: "0755"
+
+- name: copy gnome-keyring-unlock service
+  template:
+    src: files/gnome-keyring-unlock/gnome-keyring-unlock.service.j2
+    dest: /home/harriet/.config/systemd/user/gnome-keyring-unlock.service
+    owner: harriet
+    group: harriet
+    mode: "0755"
+  vars:
+    user_passwd_file: /home/harriet/.passwd-tpm
+
+- name: enable gnome-keyring-unlock service
+  shell:
+    cmd: |
+      export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
+      systemctl --user daemon-reload && \
+      systemctl --user enable gnome-keyring-unlock
+  register: enable_gnome_keyring_unlock
+  changed_when: enable_gnome_keyring_unlock.stderr
+  become_user: harriet
+
+- name: encrypt password
+  shell:
+    cmd: sudo -u tss clevis-encrypt-tpm2 '{"pcr_ids":"7"}' <<<"{{ passwd }}" > {{ user_passwd_file }}
+  no_log: true
+  become_user: harriet
+  vars:
+    passwd: "{{ user_account.harriet.password }}"
+    user_passwd_file: /home/harriet/.passwd-tpm
+
+# on pw change: https://github.com/jeroennijhof/pam_script
