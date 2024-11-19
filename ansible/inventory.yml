@@ -7,3 +7,5 @@ all:
     stevedore:
     opnsense:
       ansible_python_interpreter: /usr/local/bin/python3
+    pikvm:
+      ansible_remote_tmp: /tmp/ansible
