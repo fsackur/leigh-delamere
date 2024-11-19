@@ -1,1 +1,43 @@
 ---
+- name: install pikvm-update
+  package:
+    name: pikvm-os-updater
+
+- name: update packages
+  shell:
+    cmd: pikvm-update --no-reboot && rw
+  register: pikvm_update
+  changed_when: not (pikvm_update.stdout_lines | select('match', '.*Your PiKVM is already up-to-date.*'))
+
+- when: pikvm_update.changed
+  pause:
+    prompt: "Updates were installed. Reboot pikvm"
+
+- name: create user for freddie
+  user:
+    name: freddie
+    expires: -1
+    createhome: true
+    groups:
+      - wheel
+    append: true
+  register: create_account
+
+- name: reset freddie's password
+  user:
+    name: freddie
+    password: "{{ pikvm.user_account.freddie.password | password_hash('sha512', 'idempotentsalt') }}"
+  no_log: true
+  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  tags:
+    - reset_password
+
+- name: reset root password
+  user:
+    name: root
+    password: "{{ pikvm.user_account.root.password | password_hash('sha512', 'idempotentsalt') }}"
+  no_log: true
+  when: ansible_run_tags | select('eq', 'reset_password')
+  tags:
+    - reset_password
+    - never
