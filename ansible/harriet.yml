@@ -20,6 +20,10 @@
   vars_files:
     - vars/vault_wrapper.yml
   roles:
+    - role: sshd
+      tags: sshd
+    - role: sudo
+      tags: sudo
     - role: base
       tags: base
     - role: proxmox_backup

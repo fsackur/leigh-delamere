@@ -24,6 +24,10 @@
       shell:
         cmd: ro
   roles:
+    - role: sshd
+      tags: sshd
+    - role: sudo
+      tags: sudo
     - role: pikvm
       tags: pikvm
   become: true

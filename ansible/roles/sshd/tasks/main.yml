@@ -3,7 +3,7 @@
     sshd_config_path: /etc/ssh/sshd_config.d/10-ansible.conf
     sftp_subsytem_config: ""
     sshd_state: "started"
-    authorized_keys: "{{ lookup('file', 'files/home/.ssh/authorized_keys') | split('\n') }}"
+    authorized_keys: "{{ lookup('file', 'files/authorized_keys') | split('\n') }}"
 
 - name: copy authorized_keys
   lineinfile:
@@ -44,7 +44,7 @@
             sftp_subsytem_config: Subsystem sftp {{ sftp_server.stdout_lines[0] }}
 
     - template:
-        src: files/ssh/sshd_config.d/10-ansible.conf.j2
+        src: files/10-ansible.conf.j2
         dest: "{{ sshd_config_path }}"
         lstrip_blocks: true
         trim_blocks: true
