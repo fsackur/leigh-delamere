@@ -11,3 +11,7 @@ backup:
   harriet-desktop:
     username: "{{ vault.backup['harriet-desktop'].username }}"
     api_token: "{{ vault.backup['harriet-desktop'].api_token }}"
+opnsense:
+  api:
+    key: "{{ vault.opnsense.api.key }}"
+    secret: "{{ vault.opnsense.api.secret }}"

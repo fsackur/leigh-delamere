@@ -1,0 +1,51 @@
+---
+- name: install cli on controller
+  import_tasks: opn_cli_local.yml
+  tags: opn_cli
+
+- import_tasks: base.yml
+  tags: base
+
+- name: install cli on host
+  import_tasks: opn_cli.yml
+  tags: opn_cli
+
+- import_tasks: user.yml
+  tags: user
+  vars:
+    home: /root/
+    user: root
+
+- import_tasks: user.yml
+  tags: user
+  vars:
+    home: /home/{{ ansible_user }}/
+    user: "{{ ansible_user }}"
+  when: ansible_user != "root"
+
+- set_fact:
+    opnsense_backup_path: "{{ role_path  }}/backups/config.{{ ansible_hostname }}.xml"
+    opnsense_vault_password_file: "{{
+      lookup('file', ( playbook_dir + '/ansible.cfg'))
+        | split('\n')
+        | select('match', '^\\s*private_key_file.*\\s*=')
+        | first
+        | regex_replace('.*=\\s*', '') }}"
+  tags:
+    - backup
+    - restore
+    - never
+
+- name: restore
+  import_tasks: restore.yml
+  tags:
+    - restore
+    - never
+  when: ansible_run_tags | select('eq', 'restore') | length == 1
+
+- name: backup
+  import_tasks: backup.yml
+  tags:
+    - backup
+    - never
+  when: ansible_run_tags | select('eq', 'backup') | length == 1

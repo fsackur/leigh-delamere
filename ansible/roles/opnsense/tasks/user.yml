@@ -1,0 +1,18 @@
+---
+- name: copy bash profile script
+  copy:
+    src: files/home/{{ item }}
+    dest: /{{ home }}/{{ item }}
+    mode: "0744"
+    owner: "{{ user }}"
+    group: wheel
+  loop:
+    - .bash_aliases
+    - .bashrc
+    - .bash_profile
+
+- name: set editor to nano
+  lineinfile:
+    path: /{{ home }}/.profile
+    search_string: EDITOR=
+    line: EDITOR=nano;    export EDITOR

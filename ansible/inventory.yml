@@ -5,3 +5,5 @@ all:
     harriet-laptop:
       backup_schedule: "10:00"
     stevedore:
+    opnsense:
+      ansible_python_interpreter: /usr/local/bin/python3

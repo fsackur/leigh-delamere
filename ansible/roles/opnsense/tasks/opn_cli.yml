@@ -1,0 +1,50 @@
+---
+- name: create opn-cli folder for root
+  file:
+    path: /root/.opn-cli
+    state: directory
+    mode: "0700"
+    owner: root
+    group: wheel
+
+- name: create opn-cli folder for user
+  file:
+    path: /home/{{ ansible_user }}/.opn-cli
+    state: directory
+    mode: "0700"
+    owner: "{{ ansible_user }}"
+    group: wheel
+
+- name: create opn-cli config for root
+  template:
+    src: files/opn_cli.conf.yaml.j2
+    dest: /root/.opn-cli/conf.yaml
+    mode: "0600"
+    owner: root
+    group: wheel
+  no_log: true
+  vars:
+    api_key: "{{ opnsense.api.key }}"
+    api_secret: "{{ opnsense.api.secret }}"
+    api_url: "https://localhost/api"
+
+- name: link opn-cli config for user
+  file:
+    path: /home/{{ ansible_user }}/.opn-cli/conf.yaml
+    src: /root/.opn-cli/conf.yaml
+    state: link
+    follow: false
+    mode: "0700"
+    owner: "{{ ansible_user }}"
+    group: wheel
+
+- name: install dependencies
+  package:
+    name:
+      - libxml2
+      - libxslt
+
+- name: install opn-cli on controller
+  pip:
+    name: opn-cli
+  become: true

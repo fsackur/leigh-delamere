@@ -1,0 +1,14 @@
+---
+
+# System > Settings > Administration > Enable Secure Shell
+# System > Access > Users > add user (and paste public key)
+
+- name: OPNsense
+  hosts:
+    - opnsense
+  become: true
+  vars_files:
+    - vars/vault_wrapper.yml
+  roles:
+    - role: opnsense
+      tags: opnsense
