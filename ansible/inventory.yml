@@ -6,3 +6,5 @@ all:
       backup_schedule: "10:00"
     stevedore:
     pikvm:
+    opnsense:
+      ansible_python_interpreter: /usr/local/bin/python3

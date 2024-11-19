@@ -1,0 +1,27 @@
+---
+- delegate_to: localhost  # Installs on the controller. On opnsense, have to re-enable FreeBSD in /usr/local/etc/pkg/repos and install py39-pip
+  become: false
+  block:
+    - name: create opn-cli folder on controller
+      file:
+        path: /home/{{ ansible_user }}/.opn-cli
+        state: directory
+        mode: "0700"
+
+    - name: create opn-cli config on controller
+      template:
+        src: files/opn_cli.conf.yaml.j2
+        dest: /home/{{ ansible_user }}/.opn-cli/conf.{{ ansible_hostname }}.yaml
+        mode: "0600"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+      no_log: true
+      vars:
+        api_key: "{{ opnsense.api.key }}"
+        api_secret: "{{ opnsense.api.secret }}"
+        api_url: "https://{{ ansible_hostname }}.leigh.delamere/api"
+
+    - name: install opn-cli on controller
+      pip:
+        name: opn-cli
+      become: true

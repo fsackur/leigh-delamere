@@ -17,3 +17,7 @@ pikvm:
       password: "{{ vault.pikvm.user_account.root.password }}"
     freddie:
       password: "{{ vault.pikvm.user_account.freddie.password }}"
+opnsense:
+  api:
+    key: "{{ vault.opnsense.api.key }}"
+    secret: "{{ vault.opnsense.api.secret }}"

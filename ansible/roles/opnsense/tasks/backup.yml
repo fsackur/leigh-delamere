@@ -1,0 +1,21 @@
+---
+- name: backup config
+  fetch:
+    src: /conf/config.xml
+    dest: "{{ opnsense_backup_path }}"
+    flat: true
+
+- name: encrypt config
+  delegate_to: localhost
+  become: false
+  shell:
+    cmd: ansible-vault encrypt --vault-id {{ ansible_hostname }}@config --vault-password-file {{ opnsense_vault_password_file }} '{{ opnsense_backup_path }}'
+  register: encryption_result
+  ignore_errors: true
+
+- name: delete backup when encryption fails
+  when: encryption_result.failed
+  delegate_to: localhost
+  file:
+    path: "{{ opnsense_backup_path }}"
+    state: absent
