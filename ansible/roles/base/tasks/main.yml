@@ -1,10 +1,4 @@
 ---
-- import_tasks: sshd.yml
-  tags: sshd
-
-- import_tasks: sudo.yml
-  tags: sudo
-
 - import_tasks: base_packages.yml
   tags: base_packages
 

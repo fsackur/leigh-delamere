@@ -30,6 +30,10 @@
         cmd: ro
       tags: always
   roles:
+    - role: sshd
+      tags: sshd
+    - role: sudo
+      tags: sudo
     - role: pikvm
       tags: pikvm
   become: true

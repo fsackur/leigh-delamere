@@ -2,6 +2,10 @@
 - name: Docker host
   hosts: stevedore
   roles:
+    - role: sshd
+      tags: sshd
+    - role: sudo
+      tags: sudo
     - role: docker
       tags: docker
     - role: unifi
