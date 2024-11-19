@@ -1,0 +1,29 @@
+---
+# Fresh build:
+# Default root password: root
+#
+# sudo visudo /etc/sudoers.d/100-user
+#    freddie ALL=(ALL) NOPASSWD:ALL
+# sudo systemctl enable --now sshd
+# mkdir ~/.ssh
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEffBykA/0JEvwZ0XXaoOusrugan/uG6KBZ/CqepKUZA freddie@leigh.delamere" >> ~/.ssh/authorized_keys
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA4Q/4x8o82VjqRnNU234WQJuvsVnZb+bXkQ/7ObiUoK freddie.git@dustyfox.uk" > ~/.ssh/freddie_git.pub
+# chmod 600 ~/.ssh/authorized_keys ~/.ssh/freddie_git.pub
+
+- name: Raspberry Pi remote access KVM
+  hosts:
+    - pikvm
+  vars_files:
+    - vars/vault_wrapper.yml
+  pre_tasks:
+    - name: enable filesystem write
+      shell:
+        cmd: rw
+  post_tasks:
+    - name: disable filesystem write
+      shell:
+        cmd: ro
+  roles:
+    - role: pikvm
+      tags: pikvm
+  become: true

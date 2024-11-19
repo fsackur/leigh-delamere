@@ -5,3 +5,4 @@ all:
     harriet-laptop:
       backup_schedule: "10:00"
     stevedore:
+    pikvm:
