@@ -11,3 +11,9 @@ backup:
   harriet-desktop:
     username: "{{ vault.backup['harriet-desktop'].username }}"
     api_token: "{{ vault.backup['harriet-desktop'].api_token }}"
+pikvm:
+  user_account:
+    root:
+      password: "{{ vault.pikvm.user_account.root.password }}"
+    freddie:
+      password: "{{ vault.pikvm.user_account.freddie.password }}"

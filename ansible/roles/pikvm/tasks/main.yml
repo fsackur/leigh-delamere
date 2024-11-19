@@ -1,1 +1,38 @@
 ---
+# - name: install pikvm-update
+#   package:
+#     name: pikvm-os-updater
+
+# - name: update packages
+#   shell:
+#     cmd: pikvm-update && rw
+
+- name: create user for freddie
+  user:
+    name: freddie
+    expires: -1
+    createhome: true
+    groups:
+      - wheel
+    append: true
+  register: create_account
+
+- name: reset freddie's password
+  user:
+    name: freddie
+    password: "{{ pikvm.user_account.freddie.password | password_hash('sha512', 'idempotentsalt') }}"
+  no_log: true
+  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  tags:
+    - reset_password
+    - never
+
+# - name: reset root password
+#   user:
+#     name: root
+#     password: "{{ pikvm.user_account.root.password | password_hash('sha512', 'idempotentsalt') }}"
+#   no_log: true
+  # when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  # tags:
+  #   - reset_password
+  #   - never
