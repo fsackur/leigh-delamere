@@ -1,11 +1,21 @@
 ---
-# - name: install pikvm-update
-#   package:
-#     name: pikvm-os-updater
+- name: install pikvm-update and tailscale
+  package:
+    name:
+      - pikvm-os-updater
+      - tailscale-pikvm
 
-# - name: update packages
-#   shell:
-#     cmd: pikvm-update && rw
+- name: update packages
+  shell:
+    cmd: pikvm-update --no-reboot && rw
+  register: pikvm_update
+  changed_when: not (pikvm_update.stdout_lines | match('.*Your PiKVM is already up-to-date.*'))
+
+- debug: var=pikvm_update
+  # when: ansible_run_tags | select('eq', 'update_pikvm')  # reboots
+  # tags:
+  #   - update_pikvm
+  #   - never
 
 - name: create user for freddie
   user:
@@ -27,12 +37,109 @@
     - reset_password
     - never
 
-# - name: reset root password
-#   user:
-#     name: root
-#     password: "{{ pikvm.user_account.root.password | password_hash('sha512', 'idempotentsalt') }}"
-#   no_log: true
-  # when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
-  # tags:
-  #   - reset_password
-  #   - never
+- name: reset root password
+  user:
+    name: root
+    password: "{{ pikvm.user_account.root.password | password_hash('sha512', 'idempotentsalt') }}"
+  no_log: true
+  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  tags:
+    - reset_password
+    - never
+
+- name: enable tailscale service
+  systemd:
+    name: tailscaled
+    daemon_reload: true
+    enabled: true
+    state: started
+
+- name: connect to tailscale
+  shell:
+    cmd: tailscale up --timeout 3s 2>&1
+  register: tailscale_login
+  failed_when: false
+
+- when: tailscale_login.rc != 0
+  block:
+    - set_fact:
+        waiting_auth: "{{
+          tailscale_login.stdout_lines
+          | select('match', '.*To authenticate, visit.*')
+          | length > 0 }}"
+
+    - when: waiting_auth
+      pause:
+        prompt: "Authenticate by visiting this URL in your browser: {{
+          tailscale_login.stdout_lines
+          | select('match', '.*https.*')
+          | first
+          | regex_replace('\\s+|$', '  ') }}"
+
+    - when: not waiting_auth
+      fail:
+        msg: "{{ tailscale_login.stdout }}"
+
+- name: ensure systemd override folder
+  file:
+    path: /etc/systemd/system/systemd-networkd-wait-online.service.d
+    state: directory
+
+- name: don't wait for all networks on boot
+  copy:
+    src: files/systemd-networkd-wait-online.service
+    dest: /etc/systemd/system/systemd-networkd-wait-online.service.d/override.conf
+
+- name: set up wlan interface with lower metric than lan
+  copy:
+    src: files/wlan0.network
+    dest: /etc/systemd/network/wlan0.network
+
+
+
+# - name: set up SSIDs
+#   include_tasks: register_wifi.yml
+#   vars:
+#     ssid: "{{ item.value.ssid }}"
+#     password: "{{ item.value.password }}"
+#   loop: "{{ pikvm.wifi | dict2items }}"
+
+
+- name: copy base wpa_supplicant config
+  copy:
+    src: files/wpa_supplicant-wlan0.conf
+    dest: /tmp/wpa_supplicant-wlan0.conf
+    owner: root
+    group: root
+    mode: "0640"
+  changed_when: false
+
+- name: append SSIDs
+  shell:
+    cmd: wpa_passphrase '{{ item.ssid }}' '{{ item.password }}' >> /tmp/wpa_supplicant-wlan0.conf
+  changed_when: false
+  loop: "{{ pikvm.wifi }}"
+
+- name: copy completed wpa_supplicant config
+  copy:
+    remote_src: true
+    src: /tmp/wpa_supplicant-wlan0.conf
+    dest: /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+
+
+# - name: copy wpa_supplicant config
+#   template:
+#     src: files/wpa_supplicant-wlan0.conf.j2
+#     dest: /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+#     owner: root
+#     group: root
+#     mode: "0640"
+#   vars:
+#     wifi_networks: "{{ pikvm.wifi }}"
+
+- name: enable wpa_supplicant service
+  systemd:
+    name: wpa_supplicant@wlan0.service
+    daemon_reload: true
+    enabled: true
+    state: started

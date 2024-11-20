@@ -1,0 +1,24 @@
+# wpa_supplicant-wlan0.conf
+# - debug: var=ssid
+# - debug: var=password
+
+# - debug: msg="{{ register_wifi_first_run_done | default(0) }}"
+- when: not (register_wifi_first_run_done | default(False))
+  copy:
+    src: files/wpa_supplicant-wlan0.conf
+    dest: /tmp/wpa_supplicant-wlan0.conf
+    owner: root
+    group: root
+    mode: "0640"
+  changed_when: 1
+
+- set_fact:
+    register_wifi_first_run_done: true
+
+- name: set up SSIDs
+  shell:
+    cmd: wpa_passphrase '{{ ssid }}' '{{ password }}' >> /tmp/wpa_supplicant-wlan0.conf
+  changed_when: false
+#     chdir: /etc/wpa_supplicant/
+#     creates: /etc/wpa_supplicant/wifi-{{ item.key }}.conf
+#   loop: "{{ pikvm.wifi | dict2items }}"

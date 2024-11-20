@@ -19,10 +19,6 @@
     - name: enable filesystem write
       shell:
         cmd: rw
-  post_tasks:
-    - name: disable filesystem write
-      shell:
-        cmd: ro
   roles:
     - role: sshd
       tags: sshd
@@ -30,4 +26,12 @@
       tags: sudo
     - role: pikvm
       tags: pikvm
+  # tasks:
+  #   - pause:
+  #       seconds: 1
+  # post_tasks:
+  #   - name: disable filesystem write
+  #     shell:
+  #       cmd: ro
   become: true
+  become_user: root

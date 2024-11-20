@@ -1,0 +1,11 @@
+[Match]
+Name=wlan0
+
+[Network]
+DHCP=yes
+DNSSEC=no
+
+[DHCP]
+ClientIdentifier=mac
+RouteMetric=5
+IgnoreCarrierLoss=45s
