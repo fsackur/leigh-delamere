@@ -21,3 +21,4 @@ pikvm:
       password: "{{ vault.pikvm.user_account.root.password }}"
     freddie:
       password: "{{ vault.pikvm.user_account.freddie.password }}"
+  wifi: "{{ vault.pikvm.wifi }}"

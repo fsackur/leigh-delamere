@@ -76,3 +76,46 @@
     - when: not waiting_auth
       fail:
         msg: "{{ tailscale_login.stdout }}"
+
+- name: ensure systemd override folder
+  file:
+    path: /etc/systemd/system/systemd-networkd-wait-online.service.d
+    state: directory
+
+- name: don't wait for all networks on boot
+  copy:
+    src: files/systemd-networkd-wait-online.service
+    dest: /etc/systemd/system/systemd-networkd-wait-online.service.d/override.conf
+
+- name: set up wlan interface with lower metric than lan
+  copy:
+    src: files/wlan0.network
+    dest: /etc/systemd/network/wlan0.network
+
+- name: copy base wpa_supplicant config
+  copy:
+    src: files/wpa_supplicant-wlan0.conf
+    dest: /tmp/wpa_supplicant-wlan0.conf
+    owner: root
+    group: root
+    mode: "0640"
+  changed_when: false
+
+- name: append SSIDs
+  shell:
+    cmd: wpa_passphrase '{{ item.ssid }}' '{{ item.password }}' >> /tmp/wpa_supplicant-wlan0.conf
+  changed_when: false
+  loop: "{{ pikvm.wifi }}"
+
+- name: copy completed wpa_supplicant config
+  copy:
+    remote_src: true
+    src: /tmp/wpa_supplicant-wlan0.conf
+    dest: /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+
+- name: enable wpa_supplicant service
+  systemd:
+    name: wpa_supplicant@wlan0.service
+    daemon_reload: true
+    enabled: true
+    state: started
