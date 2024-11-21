@@ -24,3 +24,10 @@ pikvm:
     admin:
       password: "{{ vault.pikvm.user_account.admin.password }}"
   wifi: "{{ vault.pikvm.wifi }}"
+runbox:
+  username: "{{ vault.runbox.username }}"
+  password: "{{ vault.runbox.password }}"
+  smtp_server: "{{ vault.runbox.smtp_server }}"
+  domains: "{{ vault.runbox.domains }}"
+unifi:
+  db_password: "{{ vault.unifi.db_password }}"

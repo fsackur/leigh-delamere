@@ -15,7 +15,7 @@
 
 - name: Copy new netplan
   template:
-    src: netplan.yml.j2
+    src: files/netplan.yml.j2
     dest: /etc/netplan/ansible_netplan.yaml   # N.B. Extension must be .yaml
   register: netplan
 

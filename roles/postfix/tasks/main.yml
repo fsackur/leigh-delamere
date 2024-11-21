@@ -1,0 +1,45 @@
+---
+- name: _
+  set_fact:
+    mail_passwd_file: /root/.secrets/mail_passwd
+
+- name: pre-stage mail password
+  lineinfile:
+    path: "{{ mail_passwd_file }}"
+    line: "{{ runbox.smtp_server }} {{ runbox.username }}:{{ runbox.password }}"
+    insertafter: EOF
+    create: true
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: create mail config directory
+  file:
+    path: /etc/mail/config
+    state: directory
+
+- name: copy mail docker-compose
+  template:
+    src: files/docker-compose.yml.j2
+    dest: /etc/mail/docker-compose.yml
+
+- name: copy mail service conf
+  template:
+    src: files/mail.service
+    dest: /etc/systemd/system/mail.service
+
+- name: copy mail postfix conf
+  template:
+    src: files/postfix-main.cf
+    dest: /etc/mail/config/postfix-main.cf
+
+- include_tasks: ../../common/container_user_profile.yml
+  vars:
+    profile_path: /etc/mail/root/
+
+- name: enable mail service
+  service:
+    name: mail
+    enabled: true
+    state: started

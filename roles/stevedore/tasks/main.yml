@@ -1,0 +1,17 @@
+---
+- name: Install guest agent  # also needs to be enabled in proxmox
+  apt:
+    pkg: qemu-guest-agent
+    state: latest
+    autoclean: true
+
+- name: Create .secrets directory
+  file:
+    path: /root/.secrets/
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+
+- import_tasks: network.yml
+  tags: network

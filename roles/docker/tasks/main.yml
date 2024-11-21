@@ -1,15 +1,15 @@
 ---
-- name: Add Docker GPG apt Key
+- name: add docker gpg apt key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     state: present
 
-- name: Add Docker Repository
+- name: add docker repository
   apt_repository:
     repo: deb https://download.docker.com/linux/ubuntu mantic stable
     state: present
 
-- name: Install Docker
+- name: install docker
   apt:
     pkg:
       - docker-ce
@@ -22,13 +22,13 @@
     update_cache: true
     autoclean: true
 
-- name: Add "{{ ansible_user }}" to docker group
+- name: add "{{ ansible_user }}" to docker group
   user:
     name: "{{ ansible_user }}"
     groups: docker
     append: true
 
-- name: Add alias for dockerhub registry
+- name: add alias for dockerhub registry
   lineinfile:
     path: /etc/containers/registries.conf
     regexp: "{{ item.regexp }}"
