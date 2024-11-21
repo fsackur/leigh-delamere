@@ -44,6 +44,15 @@
     - reset_password
     - never
 
+- name: reset web access password
+  shell:
+    cmd: "kvmd-htpasswd set admin -i <<<'{{ pikvm.user_account.admin.password }}'"
+  no_log: true
+  when: ansible_run_tags | select('eq', 'reset_password')
+  tags:
+    - reset_password
+    - never
+
 - name: enable tailscale service
   systemd:
     name: tailscaled
