@@ -1,7 +1,9 @@
 ---
-- name: install pikvm-update
+- name: install pikvm-update and tailscale
   package:
-    name: pikvm-os-updater
+    name:
+      - pikvm-os-updater
+      - tailscale-pikvm
 
 - name: update packages
   shell:
@@ -41,3 +43,36 @@
   tags:
     - reset_password
     - never
+
+- name: enable tailscale service
+  systemd:
+    name: tailscaled
+    daemon_reload: true
+    enabled: true
+    state: started
+
+- name: connect to tailscale
+  shell:
+    cmd: tailscale up --timeout 3s 2>&1
+  register: tailscale_login
+  failed_when: false
+
+- when: tailscale_login.rc != 0
+  block:
+    - set_fact:
+        waiting_auth: "{{
+          tailscale_login.stdout_lines
+          | select('match', '.*To authenticate, visit.*')
+          | length > 0 }}"
+
+    - when: waiting_auth
+      pause:
+        prompt: "Authenticate by visiting this URL in your browser: {{
+          tailscale_login.stdout_lines
+          | select('match', '.*https.*')
+          | first
+          | regex_replace('\\s+|$', '  ') }}"
+
+    - when: not waiting_auth
+      fail:
+        msg: "{{ tailscale_login.stdout }}"
