@@ -25,6 +25,8 @@
   flatpak:
     name:
       - us.zoom.Zoom
+      - org.gnome.Geary
+      - org.chromium.Chromium
     method: system
 
 - name: test bookwright installation
