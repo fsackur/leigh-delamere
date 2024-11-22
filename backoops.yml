@@ -1,0 +1,32 @@
+---
+# Manual out-of-box steps:
+#
+# apt update
+# apt install -y sudo nano lvm2 parted net-tools iproute2 ifupdown2 python3-apt git
+#
+# useradd -U -m freddie
+# chpasswd <<<"freddie:hunter2"
+# chsh -s /usr/bin/bash freddie
+# sudo visudo /etc/sudoers.d/100-user
+#    freddie ALL=(ALL) NOPASSWD:ALL
+#
+# sudo systemctl enable --now sshd
+# mkdir -p /home/freddie/.ssh
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEffBykA/0JEvwZ0XXaoOusrugan/uG6KBZ/CqepKUZA freddie@leigh.delamere" >> /home/freddie/.ssh/authorized_keys
+# chown -R freddie:freddie /home/freddie/.ssh
+# chmod 600 /home/freddie/.ssh/authorized_keys
+
+- name: Proxmox backup host
+  hosts: backoops
+  become: true
+  roles:
+    - role: sshd
+      tags: sshd
+    - role: sudo
+      tags: sudo
+    - role: proxmox-common
+      tags: proxmox-common
+    - role: proxmox-backup
+      tags: proxmox-backup
+  vars_files:
+    - vars/vault_wrapper.yml

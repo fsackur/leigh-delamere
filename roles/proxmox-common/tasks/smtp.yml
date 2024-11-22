@@ -1,0 +1,31 @@
+---
+- set_fact:
+    smtp_sasl_passwd_file: /secrets/smtp_sasl_passwd
+
+- name: create secret folder
+  file:
+    path: /secrets/
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: write secret
+  copy:
+    content: "{{ runbox.smtp_server }} {{ runbox.username }}:{{ runbox.password }}"
+    dest: "{{ smtp_sasl_passwd_file }}"
+    mode: "0600"
+    owner: root
+    group: root
+  no_log: true
+
+- name: install smtp auth packages
+  package:
+    name:
+      - libsasl2-2
+      - libsasl2-modules
+
+- name: copy postfix config
+  template:
+    src: files/main.cf.j2
+    dest: /etc/postfix/main.cf

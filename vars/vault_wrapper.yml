@@ -31,3 +31,8 @@ runbox:
   domains: "{{ vault.runbox.domains }}"
 unifi:
   db_password: "{{ vault.unifi.db_password }}"
+proxbox:
+  api:
+    user: "{{ vault.proxbox.api.user }}"
+    token_id: "{{ vault.proxbox.api.token_id }}"
+    token_secret: "{{ vault.proxbox.api.token_secret }}"

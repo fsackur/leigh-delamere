@@ -1,0 +1,43 @@
+---
+- set_fact:
+    proxmox_role:
+      name: "{{ role_names | select('match', 'proxmox-(ve|backup)') | first }}"
+      is_ve: "{{ 'proxmox-ve' in role_names }}"
+      is_backup: "{{ 'proxmox-backup' in role_names }}"
+  tags: always
+
+- when: "[ proxmox_role.is_ve, proxmox_role.is_backup ] | select() | list | length != 1"
+  fail:
+    msg: "Host must have either 'proxmox-ve' or 'proxmox-backup' role"
+  tags: always
+
+- name: install packages
+  package:
+    name:
+      - sudo
+      - nano
+      - net-tools
+      - iproute2
+      - ifupdown2
+      - nginx
+      - xauth  # for ssh X11 forwarding
+      - python3-apt
+      - git
+      - lvm2
+      - parted
+      - python3-proxmoxer  # for community.general.proxmox
+
+- name: "don't cripple path for non-root users"
+  copy:
+    src: files/etc.profile
+    dest: /etc/profile
+    force: false
+    mode: "0644"
+    owner: root
+    group: root
+
+- import_tasks: web_ui.yml
+  tags: web_ui
+
+- import_tasks: smtp.yml
+  tags: smtp

@@ -1,0 +1,7 @@
+[Unit]
+Requires={{ proxmox_proxy_service }}.service
+After={{ proxmox_proxy_service }}.service
+
+[Service]
+Restart=on-failure
+RestartSec=6

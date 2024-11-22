@@ -1,0 +1,43 @@
+# See /usr/share/postfix/main.cf.dist for a commented, more complete version
+
+myhostname={{ ansible_hostname }}.dvlp.casa
+
+smtpd_banner = $myhostname ESMTP $mail_name (Debian/GNU)
+biff = no
+
+# appending .domain is the MUA's job.
+append_dot_mydomain = no
+
+# Uncomment the next line to generate "delayed mail" warnings
+delay_warning_time = 4h
+
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+mydestination = $myhostname
+
+# IPs in these networks are spared the PREGREET delay tarpit
+mynetworks = 127.0.0.0/8 [::1]/128 [fe80::]/64 10.0.0.0/8
+
+inet_interfaces = loopback-only
+recipient_delimiter = +
+
+compatibility_level = 2
+
+# Client-side SMTPS requires "encrypt" or stronger.
+smtp_tls_security_level = encrypt
+smtp_tls_wrappermode = yes
+
+# Opportunistically use TLS if STARTTLS is offered
+smtp_use_tls = yes
+
+relayhost = {{ runbox.smtp_server }}:465
+relay_domains = {{ " ".join(runbox.domains) }}
+
+# Authenticate to upstream SMTP relay
+smtp_sasl_auth_enable = yes
+smtp_sasl_security_options = noanonymous
+smtp_sender_dependent_authentication = yes
+smtp_sasl_password_maps = texthash:{{ smtp_sasl_passwd_file }}
+
+# Only relay when RCPT TO address is in relay_domains
+smtpd_client_restrictions = permit_auth_destination, reject

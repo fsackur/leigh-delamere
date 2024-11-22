@@ -1,0 +1,42 @@
+---
+- when: proxmox_role.is_ve
+  set_fact:
+    proxmox_proxy_service: pveproxy
+    proxmox_port: 8006
+    pem_file: "/etc/pve/local/pve-ssl.pem"
+    key_file: "/etc/pve/local/pve-ssl.key"
+
+- when: proxmox_role.is_backup
+  set_fact:
+    proxmox_proxy_service: proxmox-backup-proxy
+    proxmox_port: 8007
+    pem_file: "/etc/proxmox-backup/proxy.pem"
+    key_file: "/etc/proxmox-backup/proxy.key"
+
+- name: remove nginx default server
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: copy nginx config
+  template:
+    src: files/proxmox.conf.j2
+    dest: /etc/nginx/conf.d/proxmox.conf
+
+- name: create nginx override directory
+  file:
+    path: /etc/systemd/system/nginx.service.d/
+    state: directory
+
+- name: copy nginx override
+  template:
+    src: files/nginx.service.j2
+    dest: /etc/systemd/system/nginx.service.d/override.conf
+  register: nginx_daemon
+
+- name: reload nginx
+  systemd:
+    name: nginx
+    enabled: true
+    daemon_reload: "{{ nginx_daemon.changed }}"
+    state: started

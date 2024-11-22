@@ -1,0 +1,67 @@
+---
+# Manual out-of-box steps:
+#
+# apt update
+# apt install -y sudo nano lvm2 parted net-tools iproute2 ifupdown2 python3-apt git
+#
+# useradd -U -m freddie
+# chpasswd freddie
+# mkdir -p /home/freddie/.ssh
+# sudo visudo /etc/sudoers.d/100-user
+#    freddie ALL=(ALL) NOPASSWD:ALL
+#
+# sudo systemctl enable --now sshd
+# mkdir ~/.ssh
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEffBykA/0JEvwZ0XXaoOusrugan/uG6KBZ/CqepKUZA freddie@leigh.delamere" >> ~/.ssh/authorized_keys
+# chown -R freddie:freddie /home/freddie/.ssh
+# chmod 600 /home/freddie/.ssh/authorized_keys
+#
+# Create LVM:
+# lsblk
+# parted /dev/nvme0n1
+#   create partitions, obvs!
+# pvcreate /dev/nvme0n1p4
+# vgcreate nvme0vg /dev/nvme0n1p4
+# vgdisplay
+# lvcreate -n nvme0 -L 618GB nvme0vg
+# lvdisplay
+
+- name: Proxmox VE host
+  hosts: proxbox
+  become: true
+  roles:
+    - role: sshd
+      tags: sshd
+    - role: sudo
+      tags: sudo
+    - role: proxmox-common
+      tags: proxmox-common
+    - role: proxmox-ve
+      tags: proxmox-ve
+  vars_files:
+    - vars/vault_wrapper.yml
+  vars:
+    proxmox_defaults:
+      api_host: proxbox
+      node: proxbox
+      api_user: "{{ proxbox.api.user }}"
+      api_token_id: "{{ proxbox.api.token_id }}"
+      api_token_secret:  "{{ proxbox.api.token_secret }}"
+      validate_certs: false
+  module_defaults:
+    community.general.proxmox: "{{ proxmox_defaults }}"
+    community.general.proxmox_disk: "{{ proxmox_defaults }}"
+    community.general.proxmox_domain_info: "{{ proxmox_defaults }}"
+    community.general.proxmox_group_info: "{{ proxmox_defaults }}"
+    community.general.proxmox_kvm: "{{ proxmox_defaults }}"
+    community.general.proxmox_nic: "{{ proxmox_defaults }}"
+    community.general.proxmox_node_info: "{{ proxmox_defaults }}"
+    community.general.proxmox_pool: "{{ proxmox_defaults }}"
+    community.general.proxmox_pool_member: "{{ proxmox_defaults }}"
+    community.general.proxmox_snap: "{{ proxmox_defaults }}"
+    community.general.proxmox_storage_contents_info: "{{ proxmox_defaults }}"
+    community.general.proxmox_storage_info: "{{ proxmox_defaults | combine({ 'node': omit }) }}"
+    community.general.proxmox_tasks_info: "{{ proxmox_defaults }}"
+    community.general.proxmox_template: "{{ proxmox_defaults }}"
+    community.general.proxmox_user_info: "{{ proxmox_defaults }}"
+    community.general.proxmox_vm_info: "{{ proxmox_defaults }}"
