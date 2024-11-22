@@ -8,7 +8,7 @@
       passwd_file: proxmox-backup-passwd
       username: "{{ vault.backup[ansible_hostname].username }}"
       token_name: "{{ ansible_hostname }}"
-      server: backoops.leigh.delamere
+      server: backoops.leigh.delamere:8007
       datastore: NVMe
 
 - name: add proxmox copr repo

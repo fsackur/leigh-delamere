@@ -13,7 +13,7 @@ timeshift_path="${timeshift_path:-/timeshift/}"
 passwd_file="${passwd_file:-proxmox-backup-passwd}"
 username="${username:-backup_user@pbs}"
 token_name="${token_name:-$(hostname)}"
-server="${server:-backoops.leigh.delamere}"
+server="${server:-backoops.leigh.delamere:8007}"
 datastore="${datastore:-NVMe}"
 
 if [ ! -f $passwd_file ]; then
@@ -23,7 +23,7 @@ if [ ! -f $passwd_file ]; then
 fi
 
 
-export PBS_REPOSITORY="$username!$token_name@$server:443:$datastore"
+export PBS_REPOSITORY="$username!$token_name@$server:$datastore"
 export PBS_PASSWORD_FILE=$(realpath $passwd_file)
 
 
