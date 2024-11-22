@@ -26,8 +26,8 @@
       tags: sudo
     - role: base
       tags: base
-    - role: proxmox_backup
-      tags: proxmox_backup
+    - role: proxmox_backup_client
+      tags: proxmox_backup_client
     - role: desktop
       tags: desktop
     - role: remote_desktop
