@@ -78,7 +78,13 @@ param
     # see edit-vault.ps1
     [string]${vault-id} = "@$PSScriptRoot/vault.yml",
 
-    [string]${vault-password-file} = "$PSScriptRoot/vault-passwd",
+    [string]${vault-password-file} = $(
+        $pattern = '^\s*vault_password_file\s*=\s*(?<passwd_file>\S+)'
+        Get-Content $PSScriptRoot/ansible.cfg -ErrorAction Stop |
+            Where-Object {$_ -match $pattern} |
+            Select-Object -First 1 |
+            ForEach-Object {$Matches.passwd_file}
+    ),
 
     # further limit selected hosts to an additional pattern
     [ArgumentCompleter({
