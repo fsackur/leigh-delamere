@@ -54,6 +54,12 @@
       shell:
         cmd: wine reg add "HKEY_CURRENT_USER\Control Panel\Desktop" /v LogPixels /t REG_DWORD /d {{ wine_dpi }} /f
 
+    - name: link pictures on the desktop for booksmart
+      file:
+        state: link
+        path: /home/harriet/.wine/drive_c/users/harriet/Desktop/
+        src: /home/harriet/Pictures
+
     - name: download bookwright installer
       get_url:
         url: https://software.blurb.com/bookwright_v2/3.3.0/BookWright.exe
