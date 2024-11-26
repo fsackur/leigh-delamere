@@ -7,6 +7,7 @@
       - gnome-shell-extension-dash-to-panel
       - gnome-shell-extension-user-theme
       - gnome-menus
+      - gnome-tweaks
       - xdg-utils
       - gnome-monitor-config  # only works while there's an interactive session. Just set it manually.
 
