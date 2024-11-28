@@ -1,0 +1,24 @@
+---
+- name: download driver
+  get_url:
+    url: https://gdlp01.c-wss.com/gds/9/0100009109/01/cnijfilter2-5.50-1-rpm.tar.gz
+    dest: /tmp/cnijfilter2-5.50-1-rpm.tar.gz
+  register: print_driver_download
+
+- name: untar driver
+  unarchive:
+    src: "{{ print_driver_download.dest }}"
+    dest: "{{ print_driver_download.dest | replace('.tar.gz', '') }}"
+    remote_src: true
+
+- name: install driver
+  pause:  # TODO: I can't figure out the switches for this horrible installer, just do it interactively
+    prompt: "Run {{ print_driver_download.dest | replace('.tar.gz', '') }}/install.sh"
+
+- name: remove driver download
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ print_driver_download.dest }}"
+    - "{{ print_driver_download.dest | replace('.tar.gz', '') }}"

@@ -16,3 +16,6 @@
 
 - import_tasks: gnome.yml
   tags: gnome
+
+- import_tasks: canon_printer.yml
+  tags: printer
