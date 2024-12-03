@@ -75,15 +75,21 @@ param
     # specify inventory host path
     [string[]]${inventory} = "$PSScriptRoot/inventory.yml",
 
-    # see edit-vault.ps1
-    [string]${vault-id} = "@$PSScriptRoot/vault.yml",
-
-    [string]${vault-password-file} = $(
-        $pattern = '^\s*vault_password_file\s*=\s*(?<passwd_file>\S+)'
+    # ansible-vault decrypt ./vault.yml --vault-password-file ~/.ssh/ansible
+    [string]${vault-id} = $(
+        $pattern = '^\s*vault_identity\s*=\s*(?<vault_id>\S+)'
         Get-Content $PSScriptRoot/ansible.cfg -ErrorAction Stop |
             Where-Object {$_ -match $pattern} |
             Select-Object -First 1 |
-            ForEach-Object {$Matches.passwd_file}
+            ForEach-Object {$Matches.vault_id}
+    ),
+
+    [string]${vault-password-file} = $(
+        $pattern = '^\s*vault_password_file\s*=\s*(?<vault_password_file>\S+)'
+        Get-Content $PSScriptRoot/ansible.cfg -ErrorAction Stop |
+            Where-Object {$_ -match $pattern} |
+            Select-Object -First 1 |
+            ForEach-Object {$Matches.vault_password_file}
     ),
 
     # further limit selected hosts to an additional pattern
@@ -162,6 +168,8 @@ param
     [string[]]${extra-args}
 )
 
+# return ${vault-id}
+
 [string[]]$CommonParameters = (
     'Verbose',
     'Debug',
@@ -186,10 +194,6 @@ $PSBoundParameters["user"] = $user
 
 $playbook = $playbook | Resolve-Path
 $inventory = $inventory | Resolve-Path
-${vault-id} = if (${vault-id} -match '^@(?<path>.*)' -and (Test-Path $Matches.path))
-{
-    ($Matches.path | Resolve-Path) -replace '^', '@'
-}
 
 if ($local)
 {
@@ -198,16 +202,6 @@ if ($local)
 }
 
 $exexcargs = '--inventory', "${inventory}"
-
-if (${vault-id} -match '^@(?<path>.*)' -and (Test-Path $Matches.path))
-{
-    if (-not (Test-Path ${vault-password-file} -PathType Leaf))
-    {
-        throw "Ansible vault password not found. Retrieve it from Bitwarden and write it to ${vault-password-file}."
-    }
-
-    $exexcargs += '--extra-vars', ${vault-id}, '--vault-password-file', ${vault-password-file}
-}
 
 $exexcargs += $PSBoundParameters.GetEnumerator() |
     ? {$_.Value -isnot [switch]} -PipelineVariable Param |
@@ -218,6 +212,25 @@ $exexcargs += $PSBoundParameters.GetEnumerator() |
 $exexcargs += $PSBoundParameters.GetEnumerator() |
     ? {$_.Value -is [switch] -and $_.Value} |
     % {"--$($_.Key)"}
+
+if (${vault-id} -match '^(?<path>.*?)(@.*|$)' -and (Test-Path $Matches.path))
+{
+    ${vault-id} = ($Matches.path | Resolve-Path) -replace '^', '@'
+# }
+# ${vault-id}
+# if (${vault-id} -match '^(?<path>.*?)(@.*|$)') # -and (Test-Path $Matches.path))
+# {
+#     return $Matches
+    if (-not (Test-Path ${vault-password-file} -PathType Leaf))
+    {
+        throw "Ansible vault password not found. Retrieve it from Bitwarden and write it to ${vault-password-file}."
+    }
+
+    ${vault-password-file} = Resolve-Path ${vault-password-file}
+    $exexcargs += '--extra-vars', ${vault-id}, '--vault-password-file', ${vault-password-file}
+
+    # return $exexcargs
+}
 
 $exexcargs += ${extra-args}
 

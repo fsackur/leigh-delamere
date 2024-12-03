@@ -4,14 +4,20 @@
 [Diagnostics.CodeAnalysis.SuppressMessage("PSAvoidUsingPlainTextForPassword", "vault-password-file")]
 param
 (
-    [string]${vault-id} = "@$PSScriptRoot/vault.yml",
-
-    [string]${vault-password-file} = $(
-        $pattern = '^\s*vault_password_file\s*=\s*(?<passwd_file>\S+)'
+    [string]${vault-id} = $(
+        $pattern = '^\s*vault_identity\s*=\s*(?<vault_id>\S+)'
         Get-Content $PSScriptRoot/ansible.cfg -ErrorAction Stop |
             Where-Object {$_ -match $pattern} |
             Select-Object -First 1 |
-            ForEach-Object {$Matches.passwd_file}
+            ForEach-Object {$Matches.vault_id}
+    ),
+
+    [string]${vault-password-file} = $(
+        $pattern = '^\s*vault_password_file\s*=\s*(?<vault_password_file>\S+)'
+        Get-Content $PSScriptRoot/ansible.cfg -ErrorAction Stop |
+            Where-Object {$_ -match $pattern} |
+            Select-Object -First 1 |
+            ForEach-Object {$Matches.vault_password_file}
     ),
 
     [string]$Path,
@@ -24,6 +30,8 @@ $Editor = if ($Editor) {$Editor} elseif ($IsVSCode) {'code'} else {$env:EDITOR}
 $Path = $(if ($Path) {$Path} else {${vault-id} -replace '^@'}) | Resolve-Path -ErrorAction Stop
 
 $TmpPath = $Path -replace '(\.\w+$)', '-decrypted$1'
+$ShouldWriteDecrypted = $true
+$Prompt = "Vault decrypted to '$TmpPath'. Press enter when finished editing."
 
 $Response = ''
 if (Test-Path $TmpPath)
@@ -38,18 +46,24 @@ if (Test-Path $TmpPath)
         return
     }
 
-    if ($Response -ilike 'o*')
+    if ($Response -ilike 'c*')
     {
-
+        $ShouldWriteDecrypted = $false
+        $Prompt = "Continuing to edit '$TmpPath'. Press enter when finished editing."
     }
 }
 
+Write-Verbose "ansible-vault view $Path --vault-password-file ${vault-password-file}"
 $Output = ansible-vault view $Path --vault-password-file ${vault-password-file}
 if ($LASTEXITCODE)
 {
     throw ($Output -join "`n")
 }
-[IO.File]::WriteAllLines($TmpPath, $Output)  # no BOM
+
+if ($ShouldWriteDecrypted)
+{
+    [IO.File]::WriteAllLines($TmpPath, $Output)  # no BOM
+}
 $ChecksumBefore = Get-FileHash $TmpPath
 
 try
@@ -63,7 +77,7 @@ try
         Invoke-Item $TmpPath -ErrorAction Continue
     }
 
-    $null = Read-Host "Vault decrypted to '$TmpPath'. Press enter when finished editing."
+    $null = Read-Host $Prompt
 }
 finally
 {
@@ -74,7 +88,8 @@ finally
     }
     else
     {
-        $Output = ansible-vault encrypt $TmpPath --vault-password-file ${vault-password-file} --output $Path
+        Write-Verbose "ansible-vault encrypt $TmpPath --vault-password-file ${vault-password-file} --output $Path"
+        $Output = ansible-vault encrypt $TmpPath --encrypt-vault-id ${vault-id} --vault-password-file ${vault-password-file} --output $Path
         if ($LASTEXITCODE)
         {
             throw ($Output -join "`n")
