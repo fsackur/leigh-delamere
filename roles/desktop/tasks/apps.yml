@@ -29,13 +29,13 @@
       - org.chromium.Chromium
     method: system
 
-- name: test bookwright installation
+- name: test booksmart installation
   stat:
-    path: /home/harriet/.wine/drive_c/Program Files/BookWright/BookWright.exe
-  register: bookwright_exe_path
+    path: /home/harriet/.wine/drive_c/Program Files (x86)/BookSmart/BookSmart.exe
+  register: booksmart_exe_path
   tags: wine
 
-- when: not bookwright_exe_path.stat.exists
+- when: not booksmart_exe_path.stat.exists
   become_user: harriet
   vars:
     ansible_become_password: "{{ user_account.harriet.password }}"
@@ -43,7 +43,7 @@
     - set_fact:
         wine_dpi: "0xa8"  # default: 0x60 (96). 0xc0 is 192. Set manually in the graphics tab of winecfg.
         should_try_install: "{{ ansible_connection == 'local' and ansible_user == 'harriet' }}"  # unattended install not worth the effort
-        install_command: wine /home/harriet/Downloads/BookWright.exe /SILENT
+        install_command: wine /home/harriet/Downloads/BookSmart_3.5.3.exe /SILENT
 
     - name: init winecfg and generate wine prefix (may not work first time, try rebooting)
       shell:
@@ -60,15 +60,23 @@
         path: /home/harriet/.wine/drive_c/users/harriet/Desktop/
         src: /home/harriet/Pictures
 
-    - name: download bookwright installer
+    - name: download booksmart installer
       get_url:
-        url: https://software.blurb.com/bookwright_v2/3.3.0/BookWright.exe
-        dest: /home/harriet/Downloads/BookWright.exe
+        url: http://software.blurb.com/booksmart/BookSmart_3.5.3.exe
+        dest: /home/harriet/Downloads/BookSmart_3.5.3.exe
         owner: harriet
         group: harriet
-        mode: 0777
+        mode: "0777"
 
-    - name: install bookwright
+    - name: create booksmart icon
+      copy:
+        src: files/BookSmart.desktop
+        dest: /home/harriet/.local/share/applications/wine/Programs/BookSmart/BookSmart.desktop
+        owner: harriet
+        group: harriet
+        mode: "0644"
+
+    - name: install booksmart
       when: should_try_install
       shell:
         cmd: "{{ install_command }}"
