@@ -1,4 +1,11 @@
 ---
+- name: set renderer  # https://www.reddit.com/r/Fedora/comments/1h2tmjz/you_might_want_to_switch_gtks_renderer/
+  lineinfile:
+    path: /etc/environment
+    line: GSK_RENDERER=ngl
+    state: "{{ 'present' if ansible_facts.distribution_version == '41' else 'absent' }}"
+  when: ansible_facts.distribution == "Fedora"
+
 - name: install packaged extensions
   package:
     name:
