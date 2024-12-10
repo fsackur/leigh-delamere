@@ -82,6 +82,7 @@
     user_: "{{ primary_user }}"
 
 - name: enable automatic timed login for {{ primary_user }}
+  when: enable_automatic_login | default(False)
   shell:
     cmd: grep TimedLogin {{ gdm_conf_path }} || sed -i 's/\[daemon\]/[daemon]\n{{ '\n'.join(timed_login_settings) }}/g' {{ gdm_conf_path }}
   register: edit_gdm_custom_conf

@@ -3,9 +3,11 @@ all:
     harriet-desktop:
       backup_schedule: "03:00"  # for testing: "*:00/1" => every 1 minute; systemd-analyze calendar --iterations=8 '03:00' | grep Iter
       primary_user: harriet
+      enable_automatic_login: true
     harriet-laptop:
       backup_schedule: "10:00"
       primary_user: harriet
+      enable_automatic_login: true
     admin-desktop:
       primary_user: admin
     stevedore:
