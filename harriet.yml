@@ -32,4 +32,6 @@
       tags: desktop
     - role: remote_desktop
       tags: remote_desktop
+    - role: printer
+      tags: printer
   become: true
