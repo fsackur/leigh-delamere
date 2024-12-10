@@ -6,8 +6,8 @@ echo "====== Starting backup: $0 ======"
 
 
 # default values
-backup_name="${backup_name:-harriet-home.pxar}"
-backup_root="${backup_root:-/home/harriet/}"
+backup_name="${backup_name:-{{ primary_user }}-home.pxar}"
+backup_root="${backup_root:-/home/{{ primary_user }}/}"
 include_timeshift="${include_timeshift:-false}"
 timeshift_path="${timeshift_path:-/timeshift/}"
 passwd_file="${passwd_file:-proxmox-backup-passwd}"

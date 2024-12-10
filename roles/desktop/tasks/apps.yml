@@ -31,24 +31,24 @@
 
 - name: test booksmart installation
   stat:
-    path: /home/harriet/.wine/drive_c/Program Files (x86)/BookSmart/BookSmart.exe
+    path: /home/{{ primary_user }}/.wine/drive_c/Program Files (x86)/BookSmart/BookSmart.exe
   register: booksmart_exe_path
   tags: wine
 
 - when: not booksmart_exe_path.stat.exists
-  become_user: harriet
+  become_user: "{{ primary_user }}"
   vars:
-    ansible_become_password: "{{ user_account.harriet.password }}"
+    ansible_become_password: "{{ user_account[primary_user].password }}"
   block:
     - set_fact:
         wine_dpi: "0xa8"  # default: 0x60 (96). 0xc0 is 192. Set manually in the graphics tab of winecfg.
         should_try_install: "{{ ansible_connection == 'local' and ansible_user == 'harriet' }}"  # unattended install not worth the effort
-        install_command: wine /home/harriet/Downloads/BookSmart_3.5.3.exe /SILENT
+        install_command: wine /home/{{ primary_user }}/Downloads/BookSmart_3.5.3.exe /SILENT
 
     - name: init winecfg and generate wine prefix (may not work first time, try rebooting)
       shell:
         cmd: winecfg /v
-        creates: /home/harriet/.wine/user.reg
+        creates: /home/{{ primary_user }}/.wine/user.reg
 
     - name: set wine font scaling
       shell:
@@ -57,23 +57,23 @@
     - name: link pictures on the desktop for booksmart
       file:
         state: link
-        path: /home/harriet/.wine/drive_c/users/harriet/Desktop/
-        src: /home/harriet/Pictures
+        path: /home/{{ primary_user }}/.wine/drive_c/users/{{ primary_user }}/Desktop/
+        src: /home/{{ primary_user }}/Pictures
 
     - name: download booksmart installer
       get_url:
         url: http://software.blurb.com/booksmart/BookSmart_3.5.3.exe
-        dest: /home/harriet/Downloads/BookSmart_3.5.3.exe
-        owner: harriet
-        group: harriet
+        dest: /home/{{ primary_user }}/Downloads/BookSmart_3.5.3.exe
+        owner: "{{ primary_user }}"
+        group: "{{ primary_user }}"
         mode: "0777"
 
     - name: create booksmart icon
-      copy:
-        src: files/BookSmart.desktop
-        dest: /home/harriet/.local/share/applications/wine/Programs/BookSmart/BookSmart.desktop
-        owner: harriet
-        group: harriet
+      template:
+        src: files/BookSmart.desktop.j2
+        dest: /home/{{ primary_user }}/.local/share/applications/wine/Programs/BookSmart/BookSmart.desktop
+        owner: "{{ primary_user }}"
+        group: "{{ primary_user }}"
         mode: "0644"
 
     - name: install booksmart
@@ -84,6 +84,6 @@
 
     - when: not should_try_install
       fail:
-        msg: "Log on to the desktop as harriet and run: {{ install_command }}"
+        msg: "Log on to the desktop as {{ primary_user }} and run: {{ install_command }}"
 
   tags: wine

@@ -32,7 +32,7 @@
 
 - name: set system rdp password
   shell:
-    cmd: grdctl --system rdp set-credentials harriet "{{ vnc[ansible_hostname].password }}"
+    cmd: grdctl --system rdp set-credentials {{ primary_user }} "{{ vnc[ansible_hostname].password }}"
   no_log: true
 
 - name: enable system rdp
@@ -41,25 +41,25 @@
 
 - name: check for user desktop sharing
   shell:
-    cmd: grep -Pzo "\[org/gnome/desktop/remote-desktop/rdp\]\nenable=true\nview-only=false" /home/harriet/.config/dconf/user.txt
+    cmd: grep -Pzo "\[org/gnome/desktop/remote-desktop/rdp\]\nenable=true\nview-only=false" /home/{{ primary_user }}/.config/dconf/user.txt
   register: rdp_desktop_sharing_conf
   changed_when: false
   failed_when: false
 
 - when: true #rdp_desktop_sharing_conf.rc != 0
-  become_user: harriet
+  become_user: "{{ primary_user }}"
   vars:
-    ansible_become_password: "{{ user_account.harriet.password }}"
+    ansible_become_password: "{{ user_account[primary_user].password }}"
   block:
     - set_fact:
-        rdp_cert_folder: /home/harriet/.local/share/gnome-remote-desktop/certificates/
+        rdp_cert_folder: /home/{{ primary_user }}/.local/share/gnome-remote-desktop/certificates/
 
     - name: ensure local certificate path
       file:
         path: "{{ rdp_cert_folder }}"
         state: directory
-        owner: harriet
-        group: harriet
+        owner: "{{ primary_user }}"
+        group: "{{ primary_user }}"
 
     - name: generate user rdp cert
       shell:
@@ -79,7 +79,7 @@
       shell:
         cmd: |
           export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
-          grdctl rdp set-credentials harriet "{{ vnc[ansible_hostname].password }}"
+          grdctl rdp set-credentials {{ primary_user }} "{{ vnc[ansible_hostname].password }}"
       no_log: true
 
     - name: configure vnc desktop sharing

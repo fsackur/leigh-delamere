@@ -34,19 +34,19 @@
         user: freddie
       - name: User Themes
         id: user-theme@gnome-shell-extensions.gcampax.github.com
-        user: harriet
+        user: "{{ primary_user }}"
       - name: Dash to Panel
         id: dash-to-panel@jderose9.github.com
-        user: harriet
+        user: "{{ primary_user }}"
       - name: ArcMenu
         id: arcmenu@arcmenu.com
-        user: harriet
+        user: "{{ primary_user }}"
       - name: Hide Top Bar
         id: hidetopbar@mathieu.bidon.ca
-        user: harriet
+        user: "{{ primary_user }}"
       - name: No overview at start-up
         id: no-overview@fthx
-        user: harriet
+        user: "{{ primary_user }}"
   tags: gnome_shell_extensions
 
 - name: ensure extension folder
@@ -67,25 +67,25 @@
     loop_var: extension
   tags: gnome_shell_extensions
 
-- name: enable extensions for harriet
+- name: enable extensions for {{ primary_user }}
   include_tasks: set_dconf.yml
   vars:
-    user: harriet
+    user: "{{ primary_user }}"
     dconf_settings: |
       [org/gnome/shell]
       enabled-extensions=['launch-new-instance@gnome-shell-extensions.gcampax.github.com', 'dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'no-overview@fthx']
   tags: gnome_shell_extensions
 
-- name: configure extension settings for harriet
+- name: configure extension settings for {{ primary_user }}
   include_tasks: set_dconf.yml
   vars:
-    user: harriet
+    user: "{{ primary_user }}"
     file: files/dconf/look-and-feel.conf
 
 - name: disable hot corners and dynamic workspaces
   include_tasks: set_dconf.yml
   vars:
-    user: harriet
+    user: "{{ primary_user }}"
     file: files/dconf/activities-pane.conf
 
 - name: copy wallpapers
@@ -100,14 +100,14 @@
     file: files/dconf/wallpaper.conf.j2
     wallpaper_path: /usr/share/backgrounds/linuxmint-vanessa/hlightbulb_greece.jpg
 
-- name: set wallpaper for harriet
+- name: set wallpaper for {{ primary_user }}
   include_tasks: set_dconf.yml
   vars:
-    user: harriet
+    user: "{{ primary_user }}"
     file: files/dconf/wallpaper.conf.j2
     wallpaper_path: /usr/share/backgrounds/linuxmint-vanessa/dhoefler_path.jpg
 
-- name: copy avatar
+- name: copy avatars
   copy:
     src: files/icons/{{ item.src }}
     dest: "{{ item.dest }}"
@@ -118,8 +118,13 @@
       dest: /usr/share/pixmaps/faces/
     - src: monkey-puzzle-512x512.png
       dest: /var/lib/AccountsService/icons/harriet
-    - src: AccountsService.harriet.ini
-      dest: /var/lib/AccountsService/users/harriet
+
+- name: set avatar on login screen
+  template:
+    src: files/icons/AccountsService.ini.j2
+    dest: /var/lib/AccountsService/users/{{ primary_user }}
+  vars:
+    user: "{{ primary_user }}"
 
 # Created with GDM Settings app
 # https://github.com/orgs/gdm-settings/discussions/87

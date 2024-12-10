@@ -1,8 +1,8 @@
 ---
 - set_fact:
     proxmox_backup:
-      backup_name: harriet-home.pxar
-      backup_root: /home/harriet/
+      backup_name: "{{ primary_user }}-home.pxar"
+      backup_root: /home/{{ primary_user }}/
       include_timeshift: true
       timeshift_path: /timeshift/
       passwd_file: proxmox-backup-passwd

@@ -26,10 +26,10 @@
     group: root
     mode: "0755"
 
-- name: create user for harriet
+- name: create user for {{ primary_user }}
   user:
-    name: harriet
-    comment: Harriet
+    name: "{{ primary_user }}"
+    comment: "{{ primary_user }}"
     expires: -1
     createhome: true
     groups:
@@ -38,10 +38,10 @@
     append: true
   register: create_account
 
-- name: reset harriet's password
+- name: reset {{ primary_user }}'s password
   user:
-    name: harriet
-    password: "{{ user_account.harriet.password | password_hash('sha512', 'idempotentsalt') }}"
+    name: "{{ primary_user }}"
+    password: "{{ user_account[primary_user].password | password_hash('sha512', 'idempotentsalt') }}"
   no_log: true
   when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
   tags:
@@ -52,10 +52,10 @@
   shell:
     cmd: /usr/local/bin/encrypt-passwd "{{ passwd }}" > {{ user_passwd_file }}
   no_log: true
-  become_user: harriet
+  become_user: "{{ primary_user }}"
   vars:
-    passwd: "{{ user_account.harriet.password }}"
-    user_passwd_file: /home/harriet/.passwd-tpm
+    passwd: "{{ user_account[primary_user].password }}"
+    user_passwd_file: /home/{{ primary_user }}/.passwd-tpm
   when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
   tags:
     - reset_password
@@ -70,9 +70,9 @@
     group: "{{ user_ }}"
     mode: "0644"
   vars:
-    user_: harriet
+    user_: "{{ primary_user }}"
 
-- name: enable automatic timed login for harriet
+- name: enable automatic timed login for {{ primary_user }}
   shell:
     cmd: grep TimedLogin {{ gdm_conf_path }} || sed -i 's/\[daemon\]/[daemon]\n{{ '\n'.join(timed_login_settings) }}/g' {{ gdm_conf_path }}
   register: edit_gdm_custom_conf
@@ -81,18 +81,18 @@
     gdm_conf_path: /etc/gdm/custom.conf
     timed_login_settings:
       - TimedLoginEnable=true
-      - TimedLogin=harriet
+      - TimedLogin={{ primary_user }}
       - TimedLoginDelay=45
 
-- name: disable screen lock for harriet
+- name: disable screen lock for {{ primary_user }}
   include_tasks: set_dconf.yml
   vars:
-    user: harriet
+    user: "{{ primary_user }}"
     dconf_settings: |
       [org/gnome/desktop/screensaver]
       lock-enabled=false
 
-- name: grant harriet sudo to decrypt with tpm
+- name: grant {{ primary_user }} sudo to decrypt with tpm
   template:
     src: files/gnome-keyring-unlock/20-tss.j2
     dest: /etc/sudoers.d/20-tss
@@ -100,7 +100,7 @@
     group: root
     mode: "0600"
   vars:
-    user: harriet
+    user: "{{ primary_user }}"
 
 - name: install umglurf's gnome-keyring-unlock tool
   git:
@@ -119,21 +119,21 @@
 
 - name: ensure user service folder
   file:
-    path: /home/harriet/.config/systemd/user
+    path: /home/{{ primary_user }}/.config/systemd/user
     state: directory
-    owner: harriet
-    group: harriet
+    owner: "{{ primary_user }}"
+    group: "{{ primary_user }}"
     mode: "0755"
 
 - name: copy gnome-keyring-unlock service
   template:
     src: files/gnome-keyring-unlock/gnome-keyring-unlock.service.j2
-    dest: /home/harriet/.config/systemd/user/gnome-keyring-unlock.service
-    owner: harriet
-    group: harriet
+    dest: /home/{{ primary_user }}/.config/systemd/user/gnome-keyring-unlock.service
+    owner: "{{ primary_user }}"
+    group: "{{ primary_user }}"
     mode: "0755"
   vars:
-    user_passwd_file: /home/harriet/.passwd-tpm
+    user_passwd_file: /home/{{ primary_user }}/.passwd-tpm
 
 - name: enable gnome-keyring-unlock service
   shell:
@@ -143,7 +143,7 @@
       systemctl --user enable gnome-keyring-unlock
   register: enable_gnome_keyring_unlock
   changed_when: enable_gnome_keyring_unlock.stderr
-  become_user: harriet
+  become_user: "{{ primary_user }}"
 
 - include_tasks: ../../common/install_selinux_policy.yml
   loop:

@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=BookSmart
-Exec=env WINEPREFIX="/home/harriet/.wine/" wine C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\Start\\ Menu\\\\Programs\\\\BookSmart\\\\BookSmart.lnk
-Type=Application
-StartupNotify=true
-Path=/home/harriet/.wine/dosdevices/c:/Program Files (x86)/BookSmart
-Icon=50E3_BookWright.0
-StartupWMClass=BookSmart.exe
