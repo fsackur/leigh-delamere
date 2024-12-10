@@ -4,9 +4,13 @@
 user_account:
   harriet:
     password: "{{ vault.user_account.harriet.password }}"
+  admin:
+    password: "{{ vault.user_account.admin.password }}"
 vnc:
   harriet-desktop:
     password: "{{ vault.vnc['harriet-desktop'].password }}"
+  admin-desktop:
+    password: "{{ vault.vnc['admin-desktop'].password }}"
 backup:
   harriet-desktop:
     username: "{{ vault.backup['harriet-desktop'].username }}"

@@ -105,7 +105,7 @@
   vars:
     user: "{{ primary_user }}"
     file: files/dconf/wallpaper.conf.j2
-    wallpaper_path: /usr/share/backgrounds/linuxmint-vanessa/dhoefler_path.jpg
+    wallpaper_path: "{{ '/usr/share/backgrounds/linuxmint-vanessa/dhoefler_path.jpg' if primary_user == 'harriet' else '/usr/share/backgrounds/gnome/adwaita-l.jxl' }}"
 
 - name: copy avatars
   copy:
@@ -118,8 +118,11 @@
       dest: /usr/share/pixmaps/faces/
     - src: monkey-puzzle-512x512.png
       dest: /var/lib/AccountsService/icons/harriet
+    - src: mountain-512x512.png
+      dest: /var/lib/AccountsService/icons/admin
 
 - name: set avatar on login screen
+  when: primary_user == 'freddie' or primary_user == 'harriet'
   template:
     src: files/icons/AccountsService.ini.j2
     dest: /var/lib/AccountsService/users/{{ primary_user }}

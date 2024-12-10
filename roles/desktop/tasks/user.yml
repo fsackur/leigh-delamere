@@ -48,6 +48,15 @@
     - reset_password
     - never
 
+- name: check user's desktop crap has been created
+  stat:
+    path: /home/{{ primary_user }}/.config
+  register: home_folder_created
+
+- when: not home_folder_created.stat.exists
+  pause:
+    prompt: log in interactively as {{ primary_user }} to create desktop folders
+
 - name: encrypt password for keyring unlocker
   shell:
     cmd: /usr/local/bin/encrypt-passwd "{{ passwd }}" > {{ user_passwd_file }}
