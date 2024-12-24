@@ -1,1 +1,3 @@
 ---
+- import_tasks: allow_user.yml
+  tags: printer
