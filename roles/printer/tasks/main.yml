@@ -1,3 +1,9 @@
 ---
 - import_tasks: allow_user.yml
   tags: printer
+
+# to stop the usb printer getting continually re-added:
+# - browse to printer web mgmt page
+# - Network > Protocols > untick mDNS
+- import_tasks: brother_printer.yml
+  tags: printer
