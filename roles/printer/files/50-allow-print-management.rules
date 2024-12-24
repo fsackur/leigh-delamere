@@ -1,0 +1,9 @@
+/* Allow anyone to execute the defined action
+ * to set personal default printer with GNOME printer settings
+ */
+polkit.addRule(function(action, subject) {
+        if (action.id == "org.opensuse.cupspkhelper.mechanism.all-edit")
+        {
+                return polkit.Result.YES;
+        }
+});

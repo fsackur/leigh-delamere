@@ -1,0 +1,6 @@
+---
+- name: add polkit file
+  copy:
+    src: 50-allow-print-management.rules
+    dest: /etc/polkit-1/rules.d/50-allow-print-management.rules
+    mode: "0644"
