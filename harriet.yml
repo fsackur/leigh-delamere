@@ -17,6 +17,8 @@
   hosts:
     - harriet-desktop
     - harriet-laptop
+    - brick
+    - ghetto-blaster
   vars_files:
     - vars/vault_wrapper.yml
   roles:
