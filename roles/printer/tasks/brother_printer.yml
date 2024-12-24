@@ -1,0 +1,58 @@
+---
+- set_fact:
+    brother_printer:
+      mac_address: 58:cd:c9:4c:d5:a6
+      ip_address: "10.7.7.166"
+      default_password: 70Gmc%iR
+      model: DCP-L3520CDW
+    brother_driver_urls:
+      driver: https://download.brother.com/welcome/dlf105769/dcpl3520cdwpdrv-3.5.1-1.i386.rpm
+
+- name: download drivers
+  get_url:
+    url: "{{ item }}"
+    dest: "/tmp/{{ item | basename }}"
+  register: print_driver_download
+  loop: "{{ brother_driver_urls | dict2items | map(attribute='value') }}"
+
+- name: install drivers
+  shell:
+    cmd: rpm -ihv {{ item }}
+  register: install_driver
+  changed_when: install_driver.rc == 0
+  failed_when: install_driver.rc != 0 and "is already installed" not in install_driver.stderr
+  loop: "{{ print_driver_download.results | map(attribute='dest') }}"
+
+- name: remove printer created by installer
+  shell:
+    cmd: lpadmin -x DCPL3520CDW
+  register: remove_default_printer
+  changed_when: remove_default_printer.rc == 0
+  failed_when: remove_default_printer.rc != 0 and "does not exist" not in remove_default_printer.stderr
+
+- name: check printers
+  shell:
+    cmd: lpstat -s
+  register: lpstat
+  changed_when: false
+
+- name: add printer
+  shell:
+    cmd: |
+      lpstat -v {{ name }} || \
+      lpadmin -p {{ name }} -D '{{ desc }}' -E -v {{ device_uri }} -m {{ model }}
+  register: add_printer
+  changed_when: not ('device for' in add_printer.stdout)
+  vars:
+    name: "{{ item.name }}"
+    desc: "{{ item.desc }}"
+    model: Brother/brother_dcpl3520cdw_printer_en.ppd
+    device_uri: "{{ item.device_uri }}"
+    ppd_file: /usr/share/cups/model/Brother/brother_dcpl3520cdw_printer_en.ppd
+  loop:
+    - name: brother_wifi
+      desc: "Brother {{ brother_printer.model }} (wifi)"
+      device_uri: socket://{{ brother_printer.ip_address }}:9100
+    - name: brother_usb
+      desc: "Brother {{ brother_printer.model }} (usb)"
+      device_uri: usb://Brother/DCP-L3520CDW%20series?serial=E82389F4N546650  # discovered with /usr/lib/cups/backend/usb
