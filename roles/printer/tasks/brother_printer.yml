@@ -56,3 +56,14 @@
     - name: brother_usb
       desc: "Brother {{ brother_printer.model }} (usb)"
       device_uri: usb://Brother/DCP-L3520CDW%20series?serial=E82389F4N546650  # discovered with /usr/lib/cups/backend/usb
+
+- name: set default printer
+  when: ansible_hostname in [ 'harriet-desktop', 'harriet-laptop' ]
+  shell:
+    cmd: |
+      lpstat -d | grep {{ default_printer }} || \
+      lpadmin -d {{ default_printer }}
+  register: set_default_printer
+  changed_when: not 'system default destination' in set_default_printer.stdout
+  vars:
+    default_printer: "{{ 'brother_usb' if ansible_hostname == 'harriet-desktop' else 'brother_wifi' }}"
