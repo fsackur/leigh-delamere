@@ -7,6 +7,9 @@
       model: DCP-L3520CDW
     brother_driver_urls:
       driver: https://download.brother.com/welcome/dlf105769/dcpl3520cdwpdrv-3.5.1-1.i386.rpm
+      scanner: https://download.brother.com/welcome/dlf104036/brscan5-1.3.5-0.x86_64.rpm
+      scan_key_tool: https://download.brother.com/welcome/dlf006650/brscan-skey-0.3.2-0.x86_64.rpm
+      udev_rule: https://download.brother.com/welcome/dlf103900/brother-udev-rule-type1-1.0.2-0.noarch.rpm
 
 - name: download drivers
   get_url:
@@ -67,3 +70,10 @@
   changed_when: not 'system default destination' in set_default_printer.stdout
   vars:
     default_printer: "{{ 'brother_usb' if ansible_hostname == 'harriet-desktop' else 'brother_wifi' }}"
+
+- name: register network scanner
+  shell:
+    cmd: brsaneconfig5 -a name=Brother model={{ brother_printer.model }} ip={{ brother_printer.ip_address }}
+  register: add_network_scanner
+  changed_when: not ('is already registered' in add_network_scanner.stdout)
+# https://support.brother.com/g/b/faqlist.aspx?c=gb&lang=en&prod=dcpl3520cdw_eu_as&ftype3=100258
