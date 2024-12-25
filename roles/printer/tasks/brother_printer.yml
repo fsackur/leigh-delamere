@@ -11,6 +11,12 @@
       scan_key_tool: https://download.brother.com/welcome/dlf006650/brscan-skey-0.3.2-0.x86_64.rpm
       udev_rule: https://download.brother.com/welcome/dlf103900/brother-udev-rule-type1-1.0.2-0.noarch.rpm
 
+- name: install libgtk and document scanner
+  package:
+    name:
+      - gtk2-devel
+      - simple-scan
+
 - name: download drivers
   get_url:
     url: "{{ item }}"
