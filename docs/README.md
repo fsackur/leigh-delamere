@@ -97,6 +97,7 @@ The wifi is an Ubiquiti system with U6-Pro access points.
 | Backup   | [backoops.leigh.delamere](https://backoops.leigh.delamere) |
 | Unifi    | [unifi.leigh.delamere](https://unifi.leigh.delamere) |
 | Switch   | [switch-GS108.leigh.delamere](http://switch-GS108.leigh.delamere) |
+| Switch   | [switch-GS305.leigh.delamere](http://switch-GS305.leigh.delamere) |
 
 ## Passwords
 
