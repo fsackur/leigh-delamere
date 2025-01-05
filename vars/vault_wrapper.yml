@@ -11,10 +11,15 @@ vnc:
     password: "{{ vault.vnc['harriet-desktop'].password }}"
   admin-desktop:
     password: "{{ vault.vnc['admin-desktop'].password }}"
+  harriet-laptop:
+    password: "{{ vault.vnc['harriet-laptop'].password }}"
 backup:
   harriet-desktop:
     username: "{{ vault.backup['harriet-desktop'].username }}"
     api_token: "{{ vault.backup['harriet-desktop'].api_token }}"
+  harriet-laptop:
+    username: "{{ vault.backup['harriet-laptop'].username }}"
+    api_token: "{{ vault.backup['harriet-laptop'].api_token }}"
 opnsense:
   api:
     key: "{{ vault.opnsense.api.key }}"
