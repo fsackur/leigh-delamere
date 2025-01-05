@@ -57,7 +57,7 @@
     - name: link pictures on the desktop for booksmart
       file:
         state: link
-        path: /home/{{ primary_user }}/.wine/drive_c/users/{{ primary_user }}/Desktop/
+        path: /home/{{ primary_user }}/.wine/drive_c/users/{{ primary_user }}/Desktop/Pictures
         src: /home/{{ primary_user }}/Pictures
 
     - name: download booksmart installer
@@ -67,6 +67,11 @@
         owner: "{{ primary_user }}"
         group: "{{ primary_user }}"
         mode: "0777"
+
+    - name: create app folder
+      file:
+        path: /home/harriet/.local/share/applications/wine/Programs/BookSmart
+        state: directory
 
     - name: create booksmart icon
       template:
