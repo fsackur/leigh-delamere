@@ -29,21 +29,21 @@
       - org.chromium.Chromium
     method: system
 
-- name: test booksmart installation
+- name: test bookwright installation
   stat:
-    path: /home/{{ primary_user }}/.wine/drive_c/Program Files (x86)/BookSmart/BookSmart.exe
-  register: booksmart_exe_path
+    path: /home/{{ primary_user }}/.wine/drive_c/Program Files/BookWright/BookWright.exe
+  register: bookwright_exe_path
   tags: wine
 
-- when: not booksmart_exe_path.stat.exists
+- when: not bookwright_exe_path.stat.exists
   become_user: "{{ primary_user }}"
   vars:
     ansible_become_password: "{{ user_account[primary_user].password }}"
   block:
     - set_fact:
         wine_dpi: "0xa8"  # default: 0x60 (96). 0xc0 is 192. Set manually in the graphics tab of winecfg.
-        should_try_install: "{{ ansible_connection == 'local' and ansible_user == 'harriet' }}"  # unattended install not worth the effort
-        install_command: wine /home/{{ primary_user }}/Downloads/BookSmart_3.5.3.exe /SILENT
+        should_try_install: "{{ ansible_connection == 'local' and ansible_user == primary_user }}"  # unattended install not worth the effort
+        install_command: wine /home/{{ primary_user }}/Downloads/BookWright.exe /SILENT
 
     - name: init winecfg and generate wine prefix (may not work first time, try rebooting)
       shell:
@@ -60,28 +60,15 @@
         path: /home/{{ primary_user }}/.wine/drive_c/users/{{ primary_user }}/Desktop/Pictures
         src: /home/{{ primary_user }}/Pictures
 
-    - name: download booksmart installer
+    - name: download bookwright installer
       get_url:
-        url: http://software.blurb.com/booksmart/BookSmart_3.5.3.exe
-        dest: /home/{{ primary_user }}/Downloads/BookSmart_3.5.3.exe
+        url: https://software.blurb.com/bookwright_v2/3.3.0/BookWright.exe
+        dest: /home/{{ primary_user }}/Downloads/BookWright.exe
         owner: "{{ primary_user }}"
         group: "{{ primary_user }}"
-        mode: "0777"
+        mode: 0777
 
-    - name: create app folder
-      file:
-        path: /home/harriet/.local/share/applications/wine/Programs/BookSmart
-        state: directory
-
-    - name: create booksmart icon
-      template:
-        src: files/BookSmart.desktop.j2
-        dest: /home/{{ primary_user }}/.local/share/applications/wine/Programs/BookSmart/BookSmart.desktop
-        owner: "{{ primary_user }}"
-        group: "{{ primary_user }}"
-        mode: "0644"
-
-    - name: install booksmart
+    - name: install bookwright
       when: should_try_install
       shell:
         cmd: "{{ install_command }}"
