@@ -29,53 +29,42 @@
       - org.chromium.Chromium
     method: system
 
-- name: test bookwright installation
-  stat:
-    path: /home/{{ primary_user }}/.wine/drive_c/Program Files/BookWright/BookWright.exe
-  register: bookwright_exe_path
-  tags: wine
+- name: create temp folder for bob
+  file:
+    path: /tmp/bob/
+    state: directory
 
-- when: not bookwright_exe_path.stat.exists
-  become_user: "{{ primary_user }}"
-  vars:
-    ansible_become_password: "{{ user_account[primary_user].password }}"
-  block:
-    - set_fact:
-        wine_dpi: "0xa8"  # default: 0x60 (96). 0xc0 is 192. Set manually in the graphics tab of winecfg.
-        should_try_install: "{{ ansible_connection == 'local' and ansible_user == primary_user }}"  # unattended install not worth the effort
-        install_command: wine /home/{{ primary_user }}/Downloads/BookWright.exe /SILENT
+- name: download bob designer installer
+  unarchive:
+    remote_src: true
+    src: https://dls.photoprintit.com/download/Data/18853-en_GB/hps/setup_Bob_Designer.tgz
+    dest: /tmp/bob/
+    owner: root
+    group: root
 
-    - name: init winecfg and generate wine prefix (may not work first time, try rebooting)
-      shell:
-        cmd: winecfg /v
-        creates: /home/{{ primary_user }}/.wine/user.reg
+- name: install bob designer dependencies
+  package:
+    name:
+      - p7zip
+      - libxcrypt-compat
 
-    - name: set wine font scaling
-      shell:
-        cmd: wine reg add "HKEY_CURRENT_USER\Control Panel\Desktop" /v LogPixels /t REG_DWORD /d {{ wine_dpi }} /f
+- name: link 7za to 7z
+  file:
+    src: /usr/bin/7za
+    path: /usr/bin/7z
+    state: link
 
-    - name: link pictures on the desktop for booksmart
-      file:
-        state: link
-        path: /home/{{ primary_user }}/.wine/drive_c/users/{{ primary_user }}/Desktop/Pictures
-        src: /home/{{ primary_user }}/Pictures
+- name: comment out eula
+  shell:
+    cmd: sed -i -E 's/^(\s*showEula())/# \1/g' /tmp/bob/install.pl
 
-    - name: download bookwright installer
-      get_url:
-        url: https://software.blurb.com/bookwright_v2/3.3.0/BookWright.exe
-        dest: /home/{{ primary_user }}/Downloads/BookWright.exe
-        owner: "{{ primary_user }}"
-        group: "{{ primary_user }}"
-        mode: 0777
+- name: install bob designer
+  shell:
+    cmd: echo "" | /tmp/bob/install.pl --installDir='/home/harriet/Bob Designer' --workingDir=/tmp/bob/
+    creates: /home/harriet/Bob Designer/Bob Designer
+  become_user: harriet
 
-    - name: install bookwright
-      when: should_try_install
-      shell:
-        cmd: "{{ install_command }}"
-      become: false
-
-    - when: not should_try_install
-      fail:
-        msg: "Log on to the desktop as {{ primary_user }} and run: {{ install_command }}"
-
-  tags: wine
+- name: clean up temp folder
+  file:
+    path: /tmp/bob/
+    state: absent
