@@ -20,6 +20,9 @@ backup:
   harriet-laptop:
     username: "{{ vault.backup['harriet-laptop'].username }}"
     api_token: "{{ vault.backup['harriet-laptop'].api_token }}"
+  proxbox:
+    username: "{{ vault.backup['proxbox'].username }}"
+    api_token: "{{ vault.backup['proxbox'].api_token }}"
 opnsense:
   api:
     key: "{{ vault.opnsense.api.key }}"
