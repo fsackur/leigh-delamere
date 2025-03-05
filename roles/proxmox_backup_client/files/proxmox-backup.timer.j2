@@ -3,7 +3,7 @@ Description=Proxmox backup timer
 
 [Timer]
 Unit=proxmox-backup.service
-OnCalendar={{ backup_schedule }}
+OnCalendar={{ proxmox_backup.cron }}
 WakeSystem=true
 Persistent=true
 

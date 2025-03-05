@@ -38,6 +38,8 @@
       tags: proxmox-common
     - role: proxmox-ve
       tags: proxmox-ve
+    - role: proxmox_backup_client
+      tags: host_backup
   vars_files:
     - vars/vault_wrapper.yml
   vars:
