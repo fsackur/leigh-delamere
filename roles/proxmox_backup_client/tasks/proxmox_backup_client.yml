@@ -1,55 +1,59 @@
 ---
 - set_fact:
     proxmox_backup:
-      backup_name: "{{ primary_user }}-home.pxar"
-      backup_root: /home/{{ primary_user }}/
-      include_timeshift: true
-      timeshift_path: /timeshift/
-      passwd_file: proxmox-backup-passwd
-      username: "{{ vault.backup[ansible_hostname].username }}"
+      cron: "{{ proxmox_backup.cron }}"
+      backup_name: "{{ proxmox_backup.backup_name | default((primary_user | default(ansible_user)) + '-home.pxar') }}"
+      backup_root: "{{ proxmox_backup.backup_root | default('/home/' + (primary_user | default(ansible_user)) + '/') }}"
+      include_network: "{{ proxmox_backup.include_network | default(False) }}"
+      include_timeshift: "{{ proxmox_backup.include_timeshift | default(True) }}"
+      timeshift_path: "{{ proxmox_backup.timeshift_path | default('/timeshift/') }}"
+      passwd_file: "{{ proxmox_backup.passwd_file | default('proxmox-backup-passwd') }}"
+      username: "{{ proxmox_backup.username | default(backup[ansible_hostname].username) }}"
       token_name: "{{ ansible_hostname }}"
       server: backoops.leigh.delamere:8007
       datastore: NVMe
+    service_dir: /etc/proxmox-backup
+- debug: var=proxmox_backup
 
-- name: add proxmox copr repo
-  shell:
-    cmd: dnf -y copr enable derenderkeks/proxmox-backup-client
-    creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:derenderkeks:proxmox-backup-client.repo
+# - name: add proxmox copr repo
+#   when: ansible_facts.distribution == 'Fedora'
+#   shell:
+#     cmd: dnf -y copr enable derenderkeks/proxmox-backup-client
+#     creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:derenderkeks:proxmox-backup-client.repo
 
-- name: install proxmox backup client
-  package:
-    name: proxmox-backup-client
+# - name: install proxmox backup client
+#   package:
+#     name: proxmox-backup-client
 
-- name: create backup service directory
-  file:
-    path: /etc/proxmox-backup
-    state: directory
-    mode: 0755
-  register: service_dir
+# - name: create backup service directory
+#   file:
+#     path: "{{ service_dir }}"
+#     state: directory
+#     mode: 0755
 
-- name: write backup api token
-  copy:
-    content: "{{ vault.backup[ansible_hostname].api_token }}"
-    dest: "{{ service_dir.path }}/{{ proxmox_backup.passwd_file }}"
-    owner: root
-    group: root
-    mode: "0600"
-  no_log: true
+# - name: write backup api token
+#   copy:
+#     content: "{{ vault.backup[ansible_hostname].api_token }}"
+#     dest: "{{ service_dir }}/{{ proxmox_backup.passwd_file }}"
+#     owner: root
+#     group: root
+#     mode: "0600"
+#   no_log: true
 
 - name: generate backup client config
   lineinfile:
-    path: "{{ service_dir.path }}/proxmox-backup.env"
+    path: "{{ service_dir }}/proxmox-backup.env"
     regexp: ^{{ item.key }}=
-    line: '{{ item.key }}="{{ item.value }}"'
+    line: '{{ item.key }}="{{ (item.value | lower) if "include" in item.key else item.value }}"'
     insertafter: EOF
     create: true
-    mode: "0755"
-  loop: "{{ proxmox_backup | dict2items }}"
+    mode: "0644"
+  loop: "{{ proxmox_backup | dict2items | rejectattr('key', '==', 'cron') }}"
 
 - name: copy backup service script
-  copy:
-    src: proxmox-backup.sh
-    dest: "{{ service_dir.path }}"
+  template:
+    src: files/proxmox-backup.sh.j2
+    dest: "{{ service_dir }}/proxmox-backup.sh"
     mode: "0755"
 
 - name: copy backup service configs
@@ -57,7 +61,7 @@
     src: files/proxmox-backup.{{ item }}.j2
     dest: /etc/systemd/system/proxmox-backup.{{ item }}
   vars:
-    service_path: "{{ service_dir.path }}"
+    service_path: "{{ service_dir }}"
   loop:
     - timer
     - service

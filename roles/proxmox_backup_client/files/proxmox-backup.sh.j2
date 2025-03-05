@@ -6,9 +6,10 @@ echo "====== Starting backup: $0 ======"
 
 
 # default values
-backup_name="${backup_name:-{{ primary_user }}-home.pxar}"
-backup_root="${backup_root:-/home/{{ primary_user }}/}"
-include_timeshift="${include_timeshift:-false}"
+backup_name="${backup_name:-{{ proxmox_backup.backup_name }}}"
+backup_root="${backup_root:-{{ proxmox_backup.backup_root }}}"
+include_network="${include_network:-true}"
+include_timeshift="${include_timeshift:-true}"
 timeshift_path="${timeshift_path:-/timeshift/}"
 passwd_file="${passwd_file:-proxmox-backup-passwd}"
 username="${username:-backup_user@pbs}"
@@ -28,6 +29,14 @@ export PBS_PASSWORD_FILE=$(realpath $passwd_file)
 
 
 backup_specs=("$backup_name:$backup_root")
+
+
+include_network="$(tr [A-Z] [a-z] <<< "$include_network")"
+if [ "$include_network" == "0" -o "$include_network" == "false" -o -z "$include_network" ]; then
+    echo "Skipping network config backup"
+else
+    backup_specs+=("network.pxar:/etc/network")
+fi
 
 
 # Excludes match anywhere in path... e.g. ImapMail will exclude /home/timmy/.thunderbird/jkasgd87ad.default-release/ImapMail/outlook.office365.com

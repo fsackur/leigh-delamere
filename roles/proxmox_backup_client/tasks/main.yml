@@ -1,6 +1,7 @@
 ---
 - import_tasks: timeshift.yml
   tags: timeshift
+  when: proxmox_backup.include_timeshift | default(True)
 
 - import_tasks: proxmox_backup_client.yml
   tags: proxmox_backup_client
