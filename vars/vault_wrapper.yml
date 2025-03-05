@@ -45,3 +45,10 @@ proxbox:
     user: "{{ vault.proxbox.api.user }}"
     token_id: "{{ vault.proxbox.api.token_id }}"
     token_secret: "{{ vault.proxbox.api.token_secret }}"
+wifi:
+  leigh_delamere:
+    ssid: "{{ vault.wifi.leigh_delamere.ssid }}"
+    password: "{{ vault.wifi.leigh_delamere.password }}"
+  orde_hall_street:
+    ssid: "{{ vault.wifi.orde_hall_street.ssid }}"
+    password: "{{ vault.wifi.orde_hall_street.password }}"
