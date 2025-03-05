@@ -1,0 +1,28 @@
+---
+- set_fact:
+    wifi_networks: "{{ [ wifi.leigh_delamere ] if 'desktop' in ansible_hostname else wifi.values() }}"
+    wifi_interfaces: '{{ ansible_interfaces | select("search", "^w") }}'
+
+- set_fact:
+    wifi_networks: '{{
+        wifi_networks |
+          product(wifi_interfaces | map("community.general.dict_kv", "ifname")) |
+          map("combine") |
+          list
+      }}'
+
+- name: add wifi network
+  loop: "{{ wifi_networks }}"
+  loop_control:
+    loop_var: wifi_network
+  nmcli:
+    conn_name: "{{ wifi_network.ssid }}"
+    state: present
+    type: wifi
+    ifname: "{{ wifi_network.ifname }}"
+    ssid: "{{ wifi_network.ssid }}"
+    wifi:
+      cloned-mac-address: permanent
+    wifi_sec:
+      key-mgmt: wpa-psk
+      psk: "{{ wifi_network.password }}"
