@@ -20,6 +20,7 @@
     name:
       - bash  # chsh has no effect; to change shell, System > Access > Users > Edit
       - nano
+      - bind-tools
 
 - name: copy sideload helper
   copy:
@@ -52,6 +53,7 @@
 - set_fact:
     opnsense_packages:
       - os-qemu-guest-agent
+      - os-bind
       - os-iperf
       - os-git-backup
       - os-ddclient
