@@ -6,6 +6,7 @@
     owner: root
     group: root
     mode: "0644"
+  tags: dnf
 
 - name: install base packages
   package:
@@ -20,14 +21,17 @@
       - winetricks
       - wineglass
     state: latest
+  tags: dnf
 
 - name: install flatpaks
   flatpak:
     name:
       - us.zoom.Zoom
-      - org.gnome.Geary
+      - org.gnome.Geary  # email
       - org.chromium.Chromium
+      - org.kde.okular  # pdf view/edit
     method: system
+  tags: flatpak
 
 - name: create temp folder for bob
   file:
