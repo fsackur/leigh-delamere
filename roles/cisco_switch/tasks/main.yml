@@ -1,0 +1,4 @@
+---
+- import_tasks: control_node.yml
+  delegate_to: localhost
+  tags: control_node
