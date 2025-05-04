@@ -5,11 +5,35 @@
     - control_node
     - never
 
-- name: show version
-  ios_command:
-    commands: show version | incl Version
-  register: output
+- name: set hostname
+  cisco.ios.ios_hostname:
+    config:
+      hostname: "{{ ansible_host }}"
+    state: replaced
+  tags: name
 
-- name: print output
-  debug:
-    var: output.stdout_lines
+- name: set domain
+  cisco.ios.ios_config:
+    backup: true
+    lines:
+      - ip domain-name leigh.delamere
+    save_when: modified
+  tags: name
+
+- name: set ntp
+  cisco.ios.ios_config:
+    lines:
+      - ntp server 0.pool.ntp.org
+      - ntp server 2.pool.ntp.org
+      - ntp server 10.9.9.1 prefer
+  tags: ntp
+
+- name: set authentication settings
+  cisco.ios.ios_config:
+    lines:
+      - aaa new-model
+      - aaa authentication attempts login 12
+      - aaa authentication login default local
+      - aaa authorization console
+      - aaa authorization exec default local if-authenticated
+  tags: auth
