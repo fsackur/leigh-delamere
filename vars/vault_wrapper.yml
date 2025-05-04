@@ -55,3 +55,6 @@ wifi:
   orde_hall_street:
     ssid: "{{ vault.wifi.orde_hall_street.ssid }}"
     password: "{{ vault.wifi.orde_hall_street.password }}"
+cisco:
+  password: "{{ vault.cisco.password }}"
+  password_hash: "{{ vault.cisco.password_hash }}"

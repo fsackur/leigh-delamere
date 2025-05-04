@@ -53,8 +53,7 @@
 #
 #       service password-encryption
 #
-#       username admin password hunter2
-#       username admin privilege 15
+#       username admin privilege 15 secret 0 hunter2
 #
 #       hostname cisco-3560
 #       ip domain-name leigh.delamere

@@ -1,0 +1,94 @@
+---
+- name: set hostname
+  cisco.ios.ios_hostname:
+    config:
+      hostname: "{{ ansible_host }}"
+    state: replaced
+  tags: name
+
+- name: set domain
+  cisco.ios.ios_config:
+    lines:
+      - ip domain-name leigh.delamere
+  tags: name
+
+- name: set ntp
+  cisco.ios.ios_config:
+    lines:
+      - ntp server 0.pool.ntp.org
+      - ntp server 2.pool.ntp.org
+      - ntp server 10.9.9.1 prefer
+  tags: ntp
+
+- name: set authentication settings
+  cisco.ios.ios_config:
+    lines:
+      - aaa new-model
+      - aaa authentication attempts login 12
+      - aaa authentication login default local
+      - aaa authorization console
+      - aaa authorization exec default local if-authenticated
+      - service password-encryption
+  tags: auth
+
+- set_fact:
+    ssh_identity_file: "{{
+      ssh_config |
+        split('\n') |
+        select('match', '^\\s*IdentityFile') |
+        first |
+        trim |
+        split |
+        last
+      }}"
+  vars:
+    ssh_config: "{{ lookup('file', (playbook_dir + '/' + ansible_libssh_config_file)) }}"
+  tags: user
+
+- name: create admin user
+  cisco.ios.ios_user:
+    name: admin
+    configured_password: "{{ cisco.password }}"
+    update_password: on_create
+    privilege: 15
+    sshkey: "{{ lookup('file', (ssh_identity_file + '.pub')) }}"
+    state: present
+  tags: user
+
+- name: check ssh server keys
+  cisco.ios.ios_command:
+    commands:
+      - show crypto key mypubkey rsa ssh-server
+  register: ssh_server_keys
+  tags: ssh
+
+- name: generate ssh server keys
+  when: not (ssh_server_keys.stdout | first)
+  cisco.ios.ios_config:
+    lines:
+      - crypto key generate rsa usage-keys label ssh-server modulus 2048
+  tags: ssh
+
+- name: configure ssh server
+  cisco.ios.ios_config:
+    lines:
+      - ip ssh version 2
+      - ip ssh maxstartups 4
+      - ip ssh dh min size 2048
+      - ip ssh server algorithm encryption aes256-ctr
+      - ip ssh server algorithm mac hmac-sha1
+      - no ip ssh server authenticate user keyboard
+      - no ip ssh server authenticate user password
+      # defaults:
+      # - ip ssh time-out 120
+      # - ip ssh authentication-retries 5
+      # - ip ssh server authenticate user publickey
+  tags: ssh
+
+- name: configure ssh console
+  cisco.ios.ios_config:
+    lines:
+      - transport input ssh
+      - privilege level 15
+    parents: line vty 0 4
+  tags: ssh
