@@ -45,9 +45,16 @@
 #       ntp server 0.pool.ntp.org
 #       ntp server 2.pool.ntp.org
 #
+#       aaa new-model
+#       aaa authentication attempts login 12
+#       aaa authentication login default local
+#       aaa authorization console
+#       aaa authorization exec default local if-authenticated
+#
 #       service password-encryption
 #
 #       username admin password hunter2
+#       username admin privilege 15
 #
 #       hostname cisco-3560
 #       ip domain-name leigh.delamere
@@ -82,6 +89,7 @@
 #
 #       line vty 0 4
 #       transport input ssh
+#       privilege level 15
 #       login local
 #
 #       end
