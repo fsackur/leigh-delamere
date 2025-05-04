@@ -1,0 +1,7 @@
+Host *
+    User admin
+    IdentityFile ~/.ssh/freddie_leigh_delamere_rsa
+    KexAlgorithms +diffie-hellman-group14-sha1
+    HostKeyAlgorithms +ssh-rsa
+    PubKeyAcceptedAlgorithms +ssh-rsa
+    Ciphers +aes256-cbc

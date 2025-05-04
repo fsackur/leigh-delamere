@@ -27,3 +27,9 @@ all:
         include_timeshift: false
     backoops:
     cisco-3560:
+      ansible_connection: network_cli
+      ansible_network_os: ios
+      ansible_user: admin
+      ansible_become_method: enable
+      ansible_network_cli_ssh_type: libssh
+      ansible_libssh_config_file: cisco-ssh-config

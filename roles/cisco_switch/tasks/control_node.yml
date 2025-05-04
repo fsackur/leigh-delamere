@@ -42,6 +42,7 @@
     name:
       - screen
       - tftp-server
+      - python3-ansible-pylibssh  # for network_cli connection
 
 - name: allow tftp through firewall
   shell:

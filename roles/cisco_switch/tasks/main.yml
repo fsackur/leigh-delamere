@@ -1,4 +1,15 @@
 ---
 - import_tasks: control_node.yml
   delegate_to: localhost
-  tags: control_node
+  tags:
+    - control_node
+    - never
+
+- name: show version
+  ios_command:
+    commands: show version | incl Version
+  register: output
+
+- name: print output
+  debug:
+    var: output.stdout_lines
