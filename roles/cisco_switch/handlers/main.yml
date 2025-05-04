@@ -4,3 +4,4 @@
     commands:
       - copy running-config startup-config
   listen: cisco_write_config
+  when: not (abort_cisco_write_config | default(false))

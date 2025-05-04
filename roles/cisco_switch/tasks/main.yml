@@ -5,8 +5,34 @@
     - control_node
     - never
 
-- import_tasks: base.yml
-  tags: base
+- name: automatically reload in 5 minutes
+  cisco.ios.ios_command:
+    commands:
+      - command: reload in 5
+        prompt: '[confirm]'
+        answer: "\r"
+  timeout: 15
+  tags:
+    - always
+    - auto_reload
 
-- import_tasks: switching.yml
-  tags: switching
+- block:
+    - import_tasks: base.yml
+      tags: base
+
+    - import_tasks: switching.yml
+      tags: switching
+
+  rescue:
+    - name: abort writing config
+      set_fact:
+        abort_cisco_write_config: true
+
+  always:
+    - name: cancel reload
+      cisco.ios.ios_command:
+        commands:
+          - reload cancel
+      tags:
+        - always
+        - auto_reload
