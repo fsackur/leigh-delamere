@@ -1,0 +1,41 @@
+---
+- set_fact:
+    vlan_descriptions:
+      6: wan
+      7: client_lan
+      8: guest_lan
+      9: core_lan
+    vlan_port_mapping:  # eth ports to vlan IDs
+      1: 7
+      2: 7
+      3: 7
+      4: 7
+      5: 7
+      6: 7
+      7: 7
+      8: 7
+      9: 9
+      10: 9
+  tags: vlan
+
+- name: name vlans
+  cisco.ios.ios_config:
+    lines:
+      - description {{ item.value }}
+    parents: interface Vlan{{ item.key }}
+  loop: "{{ vlan_descriptions | dict2items }}"
+  tags: vlan
+
+- name: set vlan ports
+  cisco.ios.ios_config:
+    lines:
+      - switchport access vlan {{ item.value }}
+    parents: interface GigabitEthernet0/{{ item.key }}
+  loop: "{{ vlan_port_mapping | dict2items }}"
+  tags: vlan
+
+- name: set management ip address
+  cisco.ios.ios_config:
+    lines:
+      - ip address dhcp
+    parents: interface Vlan9
