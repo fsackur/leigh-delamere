@@ -1,0 +1,6 @@
+---
+- name: write config
+  cisco.ios.ios_command:
+    commands:
+      - copy running-config startup-config
+  listen: cisco_write_config

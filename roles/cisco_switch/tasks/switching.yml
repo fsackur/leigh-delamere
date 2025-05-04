@@ -19,6 +19,7 @@
   tags: vlan
 
 - name: name vlans
+  notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
       - description {{ item.value }}
@@ -27,6 +28,7 @@
   tags: vlan
 
 - name: set vlan ports
+  notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
       - switchport access vlan {{ item.value }}
@@ -35,6 +37,7 @@
   tags: vlan
 
 - name: set management ip address
+  notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
       - ip address dhcp

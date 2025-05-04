@@ -1,5 +1,6 @@
 ---
 - name: set hostname
+  notify: cisco_write_config
   cisco.ios.ios_hostname:
     config:
       hostname: "{{ ansible_host }}"
@@ -7,12 +8,14 @@
   tags: name
 
 - name: set domain
+  notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
       - ip domain-name leigh.delamere
   tags: name
 
 - name: set ntp
+  notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
       - ntp server 0.pool.ntp.org
@@ -21,6 +24,7 @@
   tags: ntp
 
 - name: set authentication settings
+  notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
       - aaa new-model
@@ -46,6 +50,7 @@
   tags: user
 
 - name: create admin user
+  notify: cisco_write_config
   cisco.ios.ios_user:
     name: admin
     configured_password: "{{ cisco.password }}"
@@ -63,6 +68,7 @@
   tags: ssh
 
 - name: generate ssh server keys
+  notify: cisco_write_config
   when: not (ssh_server_keys.stdout | first)
   cisco.ios.ios_config:
     lines:
@@ -70,6 +76,7 @@
   tags: ssh
 
 - name: configure ssh server
+  notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
       - ip ssh version 2
@@ -86,6 +93,7 @@
   tags: ssh
 
 - name: configure ssh console
+  notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
       - transport input ssh
