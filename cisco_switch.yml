@@ -110,3 +110,11 @@
     - role: cisco_switch
       tags: cisco
   become: true
+  vars:
+    mgmt:
+      vlan: 9
+      address: 10.9.9.5
+      mask: 255.255.255.0
+      gateway: 10.9.9.1
+      nameservers:
+        - 10.9.9.1

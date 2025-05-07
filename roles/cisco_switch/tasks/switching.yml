@@ -35,10 +35,3 @@
     parents: interface GigabitEthernet0/{{ item.key }}
   loop: "{{ vlan_port_mapping | dict2items }}"
   tags: vlan
-
-- name: set management ip address
-  notify: cisco_write_config
-  cisco.ios.ios_config:
-    lines:
-      - ip address dhcp
-    parents: interface Vlan9
