@@ -118,3 +118,20 @@
       gateway: 10.9.9.1
       nameservers:
         - 10.9.9.1
+    vlans:
+      6: wan
+      7: client_lan
+      8: guest_lan
+      9: core_lan
+    vlan_access_ports:  # eth ports to vlan IDs
+      1: 8
+      2: 7
+      3: 7
+      4: 7
+      5: 6
+      6: 7
+      7: 9
+      8: 9
+    vlan_trunk_ports:
+      9: [ 6, 7, 8, 9 ]
+      10: [ 6, 7, 8, 9 ]
