@@ -5,34 +5,33 @@
     - control_node
     - never
 
-- name: automatically reload in 5 minutes
-  cisco.ios.ios_command:
-    commands:
-      - command: reload in 5
-        prompt: '[confirm]'
-        answer: "\r"
-  timeout: 15
-  tags:
-    - always
-    - auto_reload
+- when: ansible_run_tags | reject('eq', 'control_node') | reject('eq', 'never') | length > 0
+  block:  # Don't run if the only tags specified are control_node and/or never
 
-- block:
-    - import_tasks: base.yml
-      tags: base
-
-    - import_tasks: switching.yml
-      tags: switching
-
-  rescue:
-    - name: abort writing config
-      set_fact:
-        abort_cisco_write_config: true
-
-  always:
-    - name: cancel reload
+    - name: automatically reload in 5 minutes
       cisco.ios.ios_command:
         commands:
-          - reload cancel
+          - command: reload in 5
+            prompt: '[confirm]'
+            answer: "\r"
+      timeout: 15
       tags:
         - always
         - auto_reload
+
+    - block:
+        - import_tasks: with_reload.yml
+
+      rescue:
+        - name: abort writing config
+          set_fact:
+            abort_cisco_write_config: true
+
+      always:
+        - name: cancel reload
+          cisco.ios.ios_command:
+            commands:
+              - reload cancel
+          tags:
+            - always
+            - auto_reload
