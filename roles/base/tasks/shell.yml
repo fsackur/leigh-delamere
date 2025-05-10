@@ -7,19 +7,17 @@
 
 - name: create gitroot in home folder
   file:
-    path: /home/{{ ansible_user }}/gitroot/upstream/
+    path: /gitroot/
     state: directory
-  become: false
-  when: ansible_user != 'root'
 
 - name: link /gitroot to gitroot in home folder
   file:
-    path: /gitroot
-    src: /home/{{ ansible_user }}/gitroot
+    path: /home/{{ ansible_user }}/gitroot
+    src: /gitroot
     state: link
     owner: "{{ ansible_user }}"
   become: true
-  when: ansible_user != 'root'
+  when: ansible_user == 'freddie'
 
 - name: install chezmoi
   shell:
