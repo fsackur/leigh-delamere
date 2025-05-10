@@ -1,0 +1,14 @@
+- name: install pikvm-update
+  package:
+    name:
+      - pikvm-os-updater
+
+- name: update packages
+  shell:
+    cmd: pikvm-update --no-reboot && rw
+  register: pikvm_update
+  changed_when: not (pikvm_update.stdout_lines | select('match', '.*Your PiKVM is already up-to-date.*'))
+
+- when: pikvm_update.changed
+  pause:
+    prompt: "Updates were installed. Reboot pikvm"

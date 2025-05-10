@@ -1,0 +1,50 @@
+---
+- name: install tailscale
+  package:
+    name:
+      - tailscale-pikvm
+
+- name: allow ip forwarding
+  sysctl:
+    sysctl_file: /etc/sysctl.d/22-ansible.conf
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+  loop: "{{
+      {
+        'net.ipv4.ip_forward': 1,
+        'net.ipv6.conf.all.forwarding': 1
+      } | dict2items
+    }}"
+
+- name: enable tailscale service
+  systemd:
+    name: tailscaled
+    daemon_reload: true
+    enabled: true
+    state: started
+
+- name: connect to tailscale
+  shell:
+    cmd: tailscale up --timeout 3s --advertise-routes 10.9.9.0/24,10.7.7.0/24 2>&1
+  register: tailscale_login
+  failed_when: false
+
+- when: tailscale_login.rc != 0
+  block:
+    - set_fact:
+        waiting_auth: "{{
+          tailscale_login.stdout_lines
+          | select('match', '.*To authenticate, visit.*')
+          | length > 0 }}"
+
+    - when: waiting_auth
+      pause:
+        prompt: "Authenticate by visiting this URL in your browser: {{
+          tailscale_login.stdout_lines
+          | select('match', '.*https.*')
+          | first
+          | regex_replace('\\s+|$', '  ') }}"
+
+    - when: not waiting_auth
+      fail:
+        msg: "{{ tailscale_login.stdout }}"

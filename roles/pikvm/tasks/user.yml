@@ -1,0 +1,40 @@
+---
+- name: create user for freddie
+  user:
+    name: freddie
+    expires: -1
+    createhome: true
+    groups:
+      - wheel
+    append: true
+  register: create_account
+  tags: user
+
+- name: reset freddie's password
+  user:
+    name: freddie
+    password: "{{ pikvm.user_account.freddie.password | password_hash('sha512', 'idempotentsalt') }}"
+  no_log: true
+  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  tags:
+    - reset_password
+    - never
+
+- name: reset root password
+  user:
+    name: root
+    password: "{{ pikvm.user_account.root.password | password_hash('sha512', 'idempotentsalt') }}"
+  no_log: true
+  when: ansible_run_tags | select('eq', 'reset_password')
+  tags:
+    - reset_password
+    - never
+
+- name: reset web access password
+  shell:
+    cmd: "kvmd-htpasswd set admin -i <<<'{{ pikvm.user_account.admin.password }}'"
+  no_log: true
+  when: ansible_run_tags | select('eq', 'reset_password')
+  tags:
+    - reset_password
+    - never
