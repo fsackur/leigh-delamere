@@ -1,0 +1,60 @@
+---
+# - shell:  # https://unix.stackexchange.com/questions/144029/command-to-determine-ports-of-a-device-like-dev-ttyusb0
+#     cmd: |
+#       for sysdevpath in $(find /sys/bus/usb/devices/usb*/ -name dev); do
+#         (
+#           syspath="${sysdevpath%/dev}"
+
+#           devname="$(udevadm info -q name -p $syspath)"
+#           [[ "$devname" == "bus/"* ]] && exit
+
+#           eval "$(udevadm info -q property --export -p $syspath)"
+#           [[ -z "$ID_SERIAL" ]] && exit
+
+#           echo "$ID_SERIAL" | grep -i "Cisco_USB" > /dev/null || exit
+#           echo "/dev/$devname"
+#         )
+#       done
+#   register: tty_devices
+
+# - name: print Cisco USB console device path
+#   when: (tty_devices.stdout_lines | length) > 0
+#   debug:
+#     msg: |
+#       Found Cisco USB console at {{ tty_devices.stdout_lines }}
+#       Connect with: sudo screen {{ tty_devices.stdout_lines[0] }}
+#   fail:
+#     msg: "Could not identify Cisco USB console in {{ tty_devices.stdout_lines }}"
+
+# https://www.cisco.com/c/dam/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/quick/guide/all_languages/2960c_3560c_gsg_eng.pdf
+# To exit screen: Ctrl-A \
+
+# 9600 baud
+# 8 data bits
+# 1 stop bit
+# No parity
+# None (flow control)
+
+# sudo screen /dev/ttyACM0 9600,cs8,-cstopb,-parenb
+
+- name: install screen and tftp server
+  package:
+    name:
+      - screen
+      - tftp-hpa
+#       - python3-ansible-pylibssh  # for network_cli connection
+
+# - name: allow tftp through firewall
+#   shell:
+#     cmd: firewall-cmd --add-service=tftp --perm && firewall-cmd --reload
+
+- name: ensure tftp folder
+  file:
+    path: /srv/tftp
+    state: directory
+
+- name: start tftp
+  service:
+    name: tftpd
+    state: started
+    enabled: true

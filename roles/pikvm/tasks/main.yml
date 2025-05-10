@@ -9,3 +9,6 @@
 
 - import_tasks: wifi.yml
   tags: wifi
+
+- import_tasks: cisco.yml
+  tags: cisco
