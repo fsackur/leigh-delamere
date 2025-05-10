@@ -1,0 +1,11 @@
+---
+- name: reboot
+  block:
+    - debug:
+        msg: Rebooting. Use shutdown -c to cancel.
+      listen: reboot
+
+    - reboot:
+        pre_reboot_delay: 120
+        msg: Rebooting. Use shutdown -c to cancel.
+      listen: reboot

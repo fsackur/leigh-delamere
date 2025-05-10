@@ -1,0 +1,111 @@
+---
+- name: ensure fedora
+  when: ansible_facts.distribution != 'Fedora'
+  fail:
+    msg: Only for Fedora!
+
+- name: target next major version
+  set_fact:
+    fedora_upgrade_version: "{{ (ansible_facts.distribution_major_version | int) + 1 }}"
+
+- name: check available releases
+  uri:
+    url: https://fedoraproject.org/releases.json
+  register: fedora_releases
+
+- when: fedora_releases.json | selectattr('version', '==', fedora_upgrade_version) | selectattr('arch', '==', ansible_facts.architecture)
+  block:
+    - pause:
+        prompt: |
+          Upgrading from {{ ansible_facts.distribution_major_version }} to {{ fedora_upgrade_version }}
+
+          See https://docs.fedoraproject.org/en-US/quick-docs/upgrading-fedora-offline/
+
+          This playbook will reboot the machine multiple times. After each reboot, log back in and re-run the playbook until it completes.
+
+    - name: do upgrade/refresh
+      shell:
+        cmd: dnf upgrade --refresh -y
+      register: dnf_upgrade_refresh
+      changed_when: not ('Nothing to do.' in dnf_upgrade_refresh.stdout_lines[-3:])
+      notify: reboot
+
+    - when: not dnf_upgrade_refresh.changed
+      block:
+        - name: check for offline transaction
+          shell:
+            cmd: dnf system-upgrade status | grep "to reboot and perform the offline transaction"
+          failed_when: false
+          changed_when: false
+          register: fedora_upgrade_status
+
+        - name: download new version
+          when: fedora_upgrade_status.rc != 0
+          shell:
+            cmd: dnf system-upgrade download --releasever={{ fedora_upgrade_version }} -y
+          register: fedora_download
+
+        - name: perform upgrade
+          shell:
+            cmd: dnf system-upgrade reboot -y
+          register: fedora_upgrade
+          failed_when: not (fedora_upgrade.rc == 0 or fedora_upgrade.stderr == 'No offline transaction is stored.')
+          changed_when: fedora_upgrade.stderr != 'No offline transaction is stored.'
+
+- name: install cleanup tools
+  package:
+    name:
+      - rpmconf
+      - remove-retired-packages
+      - clean-rpm-gpg-pubkey
+      - symlinks
+      - dracut-config-rescue
+
+- name: don't overwrite hosts file
+  file:
+    path: /etc/hosts.rpmnew
+    state: absent
+
+- name: fix up package conf files
+  shell:
+    cmd: rpmconf -a --unattended use_maintainer
+  register: rpmconf_fixup
+  changed_when: rpmconf_fixup.stdout
+
+- name: remove retired packages
+  shell:
+    cmd: yes | remove-retired-packages
+  register: remove_retired_packages
+  changed_when: remove_retired_packages.stdout_lines[-1] != 'These packages have been retired:'
+
+# - name: do upgrade again
+#   shell:
+#     cmd: dnf upgrade --refresh -y
+#   register: dnf_upgrade_refresh
+#   changed_when: not ('Nothing to do.' in dnf_upgrade_refresh.stdout_lines[-3:])
+#   notify: reboot
+
+# - name: remove duplicate packages
+#   shell:
+#     cmd: dnf remove --duplicates -y  # not working as of F41 but docs still point to it
+#   register: remove_duplicate_packages
+#   changed_when: remove_duplicate_packages.stdout_lines[-1] != 'These packages have been retired:'
+
+- name: autoremove
+  shell:
+    cmd: dnf autoremove -y
+  register: autoremove
+  changed_when: not ('Nothing to do.' in autoremove.stdout_lines[-3:])
+
+- name: clean up repo keys
+  shell:
+    cmd: clean-rpm-gpg-pubkey
+  register: clean_repo_keys
+  changed_when: "clean_repo_keys.stdout != 'Total affected keys: 0'"
+
+- name: clean up dangling symlinks
+  shell:
+    cmd: symlinks -r -d /usr | grep dangling
+  register: clean_symlinks
+  changed_when: clean_symlinks.stdout
+  failed_when: not (clean_symlinks.rc == 0 or (clean_symlinks.stdout == '' and clean_symlinks.stderr == ''))

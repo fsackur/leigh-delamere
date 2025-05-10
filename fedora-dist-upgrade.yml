@@ -1,0 +1,8 @@
+---
+- name: Fedora dist upgrade
+  hosts:
+    - localhost
+  become: true
+  roles:
+    - role: fedora-dist-upgrade
+      tags: fedora-dist-upgrade
