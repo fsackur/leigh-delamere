@@ -3,7 +3,7 @@
   delegate_to: localhost
   become: false
   shell:
-    cmd: ansible-vault view --vault-id {{ ansible_hostname }}@config --vault-password-file {{ opnsense_vault_password_file }} '{{ opnsense_backup_path }}'
+    cmd: ansible-vault view '{{ opnsense_backup_path }}'
   register: decryption_result
   ignore_errors: true
 

@@ -9,7 +9,7 @@
   delegate_to: localhost
   become: false
   shell:
-    cmd: ansible-vault encrypt --vault-id {{ ansible_hostname }}@config --vault-password-file {{ opnsense_vault_password_file }} '{{ opnsense_backup_path }}'
+    cmd: ansible-vault encrypt '{{ opnsense_backup_path }}'
   register: encryption_result
   ignore_errors: true
 
