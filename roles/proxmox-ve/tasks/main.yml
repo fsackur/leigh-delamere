@@ -1,2 +1,15 @@
 ---
-# nothing to do
+- name: install OVS
+  package:
+    name:
+      - openvswitch-switch
+  tags: network
+
+- name: configure networking
+  copy:
+    src: interfaces
+    dest: /etc/network/interfaces
+    mode: "0644"
+    owner: root
+    group: root
+  tags: network
