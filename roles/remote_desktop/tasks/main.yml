@@ -39,15 +39,7 @@
   shell:
     cmd: systemctl daemon-reload && systemctl enable --now gnome-remote-desktop
 
-- name: check for user desktop sharing
-  shell:
-    cmd: grep -Pzo "\[org/gnome/desktop/remote-desktop/rdp\]\nenable=true\nview-only=false" /home/{{ primary_user }}/.config/dconf/user.txt
-  register: rdp_desktop_sharing_conf
-  changed_when: false
-  failed_when: false
-
-- when: rdp_desktop_sharing_conf.rc != 0
-  become_user: "{{ primary_user }}"
+- become_user: "{{ primary_user }}"
   vars:
     ansible_become_password: "{{ user_account[primary_user].password }}"
   block:
@@ -88,14 +80,9 @@
           export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
           grdctl vnc enable && \
           grdctl vnc disable-view-only && \
-          grdctl vnc set-auth-method prompt
-      # As of gnome 47.1, setting VNC password causes segfault
-      #
-      # grdctl vnc set-auth-method password
-      # export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
-      # grdctl vnc set-password "{{ vnc[ansible_hostname].password }}"
-      #
-      # no_log: true  # always set no_log on tasks dealing with secrets
+          grdctl vnc set-auth-method password && \
+          grdctl vnc set-password "{{ vnc[ansible_hostname].password | truncate(8, True, '') }}"
+      no_log: true
 
     - name: enable desktop sharing
       shell:
