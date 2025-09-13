@@ -16,22 +16,22 @@ services:
     image: lscr.io/linuxserver/unifi-network-application:latest
     hostname: unifi
     ports:
-      - "{{ host_addresses.unifi }}:443:8443"
-      - "{{ host_addresses.unifi }}:8443:8443"
-      - "{{ host_addresses.unifi }}:8080:8080"
-      - "{{ host_addresses.unifi }}:3478:3478/udp"
-      - "{{ host_addresses.unifi }}:10001:10001/udp"
-      - "{{ host_addresses.unifi }}:1900:1900/udp"  # optional
-      - "{{ host_addresses.unifi }}:8843:8843"      # optional
-      - "{{ host_addresses.unifi }}:8880:8880"      # optional
-      - "{{ host_addresses.unifi }}:6789:6789"      # optional
-      - "{{ host_addresses.unifi }}:5514:5514/udp"  # optional
+      #- "{{ ip_colon }}443:8443"
+      - "{{ ip_colon }}8443:8443"
+      - "{{ ip_colon }}8080:8080"
+      - "{{ ip_colon }}3478:3478/udp"
+      - "{{ ip_colon }}10001:10001/udp"
+      #- "{{ ip_colon }}1900:1900/udp"  # optional
+      - "{{ ip_colon }}8843:8843"      # optional
+      - "{{ ip_colon }}8880:8880"      # optional
+      - "{{ ip_colon }}6789:6789"      # optional
+      - "{{ ip_colon }}5514:5514/udp"  # optional
     volumes:
       # variables populated by systemd. If running outside systemd, use equivalent folders in current dir
       - ${CONFIGURATION_DIRECTORY:-.}/unifi-entrypoint.sh:/unifi-entrypoint.sh:ro
       - ${CONFIGURATION_DIRECTORY:-.}/config/:/config/
       - ${CONFIGURATION_DIRECTORY:-.}/root/:/root/
-      - ${CREDENTIALS_DIRECTORY:-./root/.secrets}/unifi_db_passwd:/unifi_db_passwd:ro
+      - ${CREDENTIALS_DIRECTORY:-.}/unifi_db_passwd:/unifi_db_passwd:ro
     environment:
       TZ: "Europe/London"
       MEM_LIMIT: 1024   # optional
@@ -45,6 +45,11 @@ services:
     entrypoint: /unifi-entrypoint.sh
     networks:
       - unifi
+      - caddy
+    labels:
+      caddy: sink.dvlp.casa
+      caddy.tls: /certs/live/dvlp.casa/fullchain.pem /certs/live/dvlp.casa/privkey.pem
+      caddy.reverse_proxy: "{% raw %}{{upstreams 8080}}{% endraw %}"
 
   unifi-db:
     restart: unless-stopped
@@ -55,7 +60,7 @@ services:
       - ${CONFIGURATION_DIRECTORY:-.}/unifi-db-entrypoint.sh:/unifi-db-entrypoint.sh:ro
       - ${CONFIGURATION_DIRECTORY:-.}/db:/data/db
       - ${CONFIGURATION_DIRECTORY:-.}/configdb:/data/configdb
-      - ${CREDENTIALS_DIRECTORY:-./root/.secrets}/unifi_db_passwd:/unifi_db_passwd:ro
+      - ${CREDENTIALS_DIRECTORY:-.}/unifi_db_passwd:/unifi_db_passwd:ro
     environment:
       MONGO_INITDB_ROOT_USERNAME: unifi
       MONGO_INITDB_ROOT_PASSWORD_FILE: /unifi_db_passwd
@@ -67,3 +72,6 @@ services:
 
 networks:
   unifi:
+    external: true
+  caddy:
+    external: true

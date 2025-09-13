@@ -1,48 +1,49 @@
 ---
-- name: write unifi db password
-  copy:
-    content: "{{ unifi.db_password }}"
-    dest: /root/.secrets/unifi_db_passwd
-    owner: root
-    group: root
-    mode: "0600"
-  no_log: true
+# - name: write unifi db password
+#   copy:
+#     content: "{{ unifi.db_password }}"
+#     dest: /services/unifi/unifi_db_passwd
+#     owner: root
+#     group: root
+#     mode: "0600"
+#   no_log: true
 
-- name: create unifi config directory
-  file:
-    path: /etc/unifi/{{ item }}
-    state: directory
-  loop:
-    - config
-    - db
-    - configdb
-    - root
+# - name: create unifi config directory
+#   file:
+#     path: /services/unifi/{{ item }}
+#     state: directory
+#   loop:
+#     -
+#     - config
+#     - db
+#     - configdb
+#     - root
 
 - name: copy unifi docker-compose
   template:
     src: files/docker-compose.yml.j2
-    dest: /etc/unifi/docker-compose.yml
+    dest: /services/unifi/docker-compose.yml
 
-- name: copy entrypoints
-  copy:
-    src: files/{{ item }}
-    dest: /etc/unifi/{{ item }}
-    mode: 0755
-  loop:
-    - unifi-entrypoint.sh
-    - unifi-db-entrypoint.sh
+# - name: copy entrypoints
+#   copy:
+#     src: files/{{ item }}
+#     dest: /services/unifi/{{ item }}
+#     mode: 0755
+#   loop:
+#     - unifi-entrypoint.sh
+#     - unifi-db-entrypoint.sh
 
-- name: copy unifi service conf
-  template:
-    src: files/unifi.service
-    dest: /etc/systemd/system/unifi.service
+# - name: copy unifi service conf
+#   template:
+#     src: files/unifi.service
+#     dest: /etc/systemd/system/unifi.service
 
-- include_tasks: ../../common/container_user_profile.yml
-  vars:
-    profile_path: /etc/unifi/root/
+# - include_tasks: ../../common/container_user_profile.yml
+#   vars:
+#     profile_path: /services/unifi/root/
 
-- name: enable unifi service
-  service:
-    name: unifi
-    enabled: true
-    state: started
+# - name: enable unifi service
+#   service:
+#     name: unifi
+#     enabled: true
+#     state: started

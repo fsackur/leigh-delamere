@@ -22,3 +22,17 @@ Wifi is configured centrally. After adopting an AP, you must go to `Settings` > 
     4. Update the inform URL: `set-inform http://foo.bar:8080/inform`
 3. The device should show up as "not adopted" in the console. Adopt it.
 4. After adoption, they no longer allow login on the default password. Use the console login instead.
+
+## Vlans
+
+Whatever untagged
+
+## Open Wifi
+
+Settings > System > Interface > set to Legacy (ignore warning about reduced feature set)
+
+Then you can create SSIDs without a PSK.
+
+They still work when you set the interface back (obvs. a different page navigation):
+
+Settings > User Interface > New User Interface > Apply
