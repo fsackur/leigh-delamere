@@ -19,7 +19,7 @@
   notify: cisco_write_config
   cisco.ios.ios_hostname:
     config:
-      hostname: "{{ ansible_host }}"
+      hostname: "{{ inventory_hostname }}"
     state: replaced
   tags: name
 
@@ -27,7 +27,7 @@
   notify: cisco_write_config
   cisco.ios.ios_config:
     lines:
-      - ip domain-name leigh.delamere
+      - ip domain-name {{ mgmt.domain }}
   tags: name
 
 - name: set ntp
@@ -69,7 +69,7 @@
   notify: cisco_write_config
   cisco.ios.ios_user:
     name: admin
-    configured_password: "{{ cisco.password }}"
+    configured_password: "{{ cisco[inventory_hostname].password }}"
     update_password: on_create
     privilege: 15
     sshkey: "{{ lookup('file', (ssh_identity_file + '.pub')) }}"
