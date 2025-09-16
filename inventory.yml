@@ -30,6 +30,9 @@ all:
       ansible_connection: network_cli
       ansible_network_os: ios
       ansible_user: admin
+      # https://github.com/ansible-collections/ansible.netcommon/issues/721
+      ansible_ssh_private_key_file: ~/.ssh/freddie_leigh_delamere_rsa
+      ansible_private_key_passphrase: "{{ cisco.ssh_key_passphrase }}"
       ansible_become_method: enable
       ansible_network_cli_ssh_type: libssh
       ansible_libssh_config_file: cisco-ssh-config
@@ -37,6 +40,9 @@ all:
       ansible_connection: network_cli
       ansible_network_os: ios
       ansible_user: admin
+      # https://github.com/ansible-collections/ansible.netcommon/issues/721
+      ansible_ssh_private_key_file: ~/.ssh/freddie_leigh_delamere_rsa
+      ansible_private_key_passphrase: "{{ cisco.ssh_key_passphrase }}"
       ansible_become_method: enable
       ansible_network_cli_ssh_type: libssh
       ansible_libssh_config_file: cisco-ssh-config

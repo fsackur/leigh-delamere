@@ -5,3 +5,4 @@ Host *
     HostKeyAlgorithms +ssh-rsa
     PubKeyAcceptedAlgorithms +ssh-rsa
     Ciphers +aes256-cbc
+    ForwardX11 no
