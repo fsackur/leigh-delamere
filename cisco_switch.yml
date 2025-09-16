@@ -102,7 +102,7 @@
 
 - name: Cisco 3560CG-8PC-S
   hosts:
-    - cisco-3560
+    - cisco-1
   gather_facts: false
   vars_files:
     - vars/vault_wrapper.yml
