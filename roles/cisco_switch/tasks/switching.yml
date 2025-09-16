@@ -22,6 +22,7 @@
   cisco.ios.ios_config:
     lines:
       - switchport trunk encapsulation dot1q
+      - switchport trunk native vlan {{ item.value }}
       - switchport mode trunk
     parents: interface GigabitEthernet0/{{ item.key }}
   loop: "{{ vlan_trunk_ports | dict2items }}"

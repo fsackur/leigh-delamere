@@ -1,0 +1,42 @@
+layer2:
+  common:
+    mgmt_vlan:
+      id: 9
+      mask: 255.255.255.0
+      gateway: 10.9.9.1
+      nameservers:
+        - 10.9.9.1
+      domain: leigh.delamere
+    vlans:
+      6: wan
+      7: client_lan
+      8: guest_lan
+      9: core_lan
+  cisco-1:
+    address: 10.9.9.5
+    vlan_access_ports:  # eth ports to vlan IDs
+      1: 8
+      2: 7
+      3: 7
+      4: 7
+      5: 6
+      6: 7
+      7: 9
+      8: 9
+    vlan_trunk_ports:
+      9: 6
+      10: 6
+  cisco-2:
+    address: 10.9.9.6
+    vlan_access_ports:  # eth ports to vlan IDs
+      2: 6
+      3: 7
+      4: 8
+      5: 9
+      6: 9
+      7: 9
+      8: 9
+    vlan_trunk_ports:
+      1: 7
+      9: 6
+      10: 6
