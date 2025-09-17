@@ -12,8 +12,16 @@
   cisco.ios.ios_config:
     lines:
       - ip default-gateway {{ mgmt.gateway }}
+      - ip default-network {{ mgmt.network }}
       - ip name-server {{ mgmt.nameservers | join(' ') if (mgmt.nameservers | type_debug == "list") else mgmt.nameservers }}
   tags: ip_address
+
+- name: disable web gui
+  notify: cisco_write_config
+  cisco.ios.ios_config:
+    lines:
+      - no ip http server
+      - no ip http secure-server
 
 - name: set hostname
   notify: cisco_write_config

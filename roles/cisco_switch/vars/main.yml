@@ -2,6 +2,7 @@ layer2:
   common:
     mgmt_vlan:
       id: 9
+      network: 10.9.9.0
       mask: 255.255.255.0
       gateway: 10.9.9.1
       nameservers:
@@ -12,6 +13,7 @@ layer2:
       7: client_lan
       8: guest_lan
       9: core_lan
+      4094: no_native_untagged
   cisco-1:
     address: 10.9.9.5
     vlan_access_ports:  # eth ports to vlan IDs
@@ -24,18 +26,18 @@ layer2:
       7: 9
       8: 9
     vlan_trunk_ports:
-      9: 6
+      9: 4094  # tag all real vlans
       10: 6
   cisco-2:
     address: 10.9.9.6
     vlan_access_ports:  # eth ports to vlan IDs
-      2: 6
+      2: 7
       3: 7
-      4: 8
-      5: 9
-      6: 9
-      7: 9
-      8: 9
+      4: 7
+      5: 7
+      6: 7
+      7: 7
+      8: 7
     vlan_trunk_ports:
       1: 7
       9: 6
