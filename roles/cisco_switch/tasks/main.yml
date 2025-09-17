@@ -3,6 +3,7 @@
     mgmt:
       vlan: "{{ layer2.common.mgmt_vlan.id }}"
       address: "{{ layer2[inventory_hostname].address }}"
+      network: "{{ layer2.common.mgmt_vlan.network }}"
       mask: "{{ layer2.common.mgmt_vlan.mask }}"
       gateway: "{{ layer2.common.mgmt_vlan.gateway }}"
       nameservers: "{{ layer2.common.mgmt_vlan.nameservers }}"
