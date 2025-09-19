@@ -13,32 +13,68 @@ layer2:
       7: client_lan
       8: guest_lan
       9: core_lan
-      4094: no_native_untagged
+      4094: no_native_untagged  # native vlan is tagging is global setting, use this dummy vlan to effectively disable per-interface
   cisco-1:
     address: 10.9.9.5
-    vlan_access_ports:  # eth ports to vlan IDs
-      1: 8
-      5: 6
-      6: 7
-      7: 9
-      8: 9
-    vlan_trunk_ports:
-      2: 7
-      3: 7
-      4: 7
-      9: 4094  # tag all real vlans
-      10: 6
+    ports:
+      1:
+        desc: burglar alarm
+        vlan: 8
+      2:
+        desc: french-room-ap
+        vlan: 7
+        trunk: true
+      3:
+        desc: back-stairs-ap
+        vlan: 7
+        trunk: true
+      4:
+        desc: front-stairs-ap
+        vlan: 7
+        trunk: true
+      5:
+        vlan: 6
+      6:
+        vlan: 7
+      7:
+        vlan: 9
+      8:
+        desc: pikvm
+        vlan: 9
+      9:
+        desc: proxbox
+        vlan: 4094  # tag all real vlans
+        trunk: true
+      10:
+        desc: wan_trunk
+        vlan: 6
+        trunk: true
   cisco-2:
     address: 10.9.9.6
-    vlan_access_ports:  # eth ports to vlan IDs
-      2: 7
-      3: 7
-      4: 7
-      5: 7
-      6: 7
-      7: 7
-      8: 7
-    vlan_trunk_ports:
-      1: 7
-      9: 6
-      10: 6
+    ports:
+      1:
+        desc: green-study-ap
+        vlan: 7
+        trunk: true
+      2:
+        vlan: 7
+      3:
+        vlan: 7
+      4:
+        vlan: 7
+      5:
+        vlan: 7
+      6:
+        vlan: 7
+      7:
+        vlan: 7
+      8:
+        vlan: 7
+      9:
+        desc: wan_trunk
+        vlan: 6
+        trunk: true
+      10:
+        desc: wan_trunk
+        vlan: 6
+        trunk: true

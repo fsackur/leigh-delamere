@@ -9,8 +9,7 @@
       nameservers: "{{ layer2.common.mgmt_vlan.nameservers }}"
       domain: "{{ layer2.common.mgmt_vlan.domain }}"
     vlans: "{{ layer2.common.vlans }}"
-    vlan_access_ports: "{{ layer2[inventory_hostname].vlan_access_ports }}"
-    vlan_trunk_ports: "{{ layer2[inventory_hostname].vlan_trunk_ports }}"
+    ports: "{{ layer2[inventory_hostname].ports }}"
   tags: always
 
 - import_tasks: control_node.yml
