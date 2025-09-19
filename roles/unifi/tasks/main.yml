@@ -17,6 +17,7 @@
     - db
     - configdb
     - root
+    - backup
 
 - name: copy unifi docker-compose
   template:

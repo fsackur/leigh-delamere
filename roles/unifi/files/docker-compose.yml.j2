@@ -28,10 +28,11 @@ services:
       - "{{ host_addresses.unifi }}:5514:5514/udp"  # optional
     volumes:
       # variables populated by systemd. If running outside systemd, use equivalent folders in current dir
-      - ${CONFIGURATION_DIRECTORY:-.}/unifi-entrypoint.sh:/unifi-entrypoint.sh:ro
-      - ${CONFIGURATION_DIRECTORY:-.}/config/:/config/
-      - ${CONFIGURATION_DIRECTORY:-.}/root/:/root/
       - ${CREDENTIALS_DIRECTORY:-./root/.secrets}/unifi_db_passwd:/unifi_db_passwd:ro
+      - ${CONFIGURATION_DIRECTORY:-.}/unifi-entrypoint.sh:/unifi-entrypoint.sh:ro
+      - ${CONFIGURATION_DIRECTORY:-.}/config/:/config/:rw
+      - ${CONFIGURATION_DIRECTORY:-.}/root/:/root/:rw
+      - ${CONFIGURATION_DIRECTORY:-.}/backup/:/config/data/backup/:rw
     environment:
       TZ: "Europe/London"
       MEM_LIMIT: 1024   # optional
