@@ -1,0 +1,13 @@
+---
+# - delegate_to: localhost
+#   shell:
+#     cmd: |
+#       ssh {{ inventory_hostname }} show run > ./roles/cisco_switch/backups/{{ inventory_hostname }}.config
+
+- name: back up running config
+  cisco.ios.ios_config:
+    backup: true
+    backup_options:
+      dir_path: "{{ role_path }}/backups"
+      filename: "{{ inventory_hostname }}.config"
+  changed_when: false

@@ -18,8 +18,13 @@
     - control_node
     - never
 
-- when: ansible_run_tags | reject('eq', 'control_node') | reject('eq', 'never') | length > 0
-  block:  # Don't run if the only tags specified are control_node and/or never
+- import_tasks: backup.yml
+  tags:
+    - backup
+    - never
+
+- when: ansible_run_tags | reject('eq', 'control_node') | reject('eq', 'backup') | reject('eq', 'never') | length > 0
+  block:  # Don't run if the only tags specified are control_node/backup/never
 
     - name: automatically reload in 5 minutes
       cisco.ios.ios_command:
@@ -33,7 +38,11 @@
         - auto_reload
 
     - block:
-        - import_tasks: with_reload.yml
+        - import_tasks: base.yml
+          tags: base
+
+        - import_tasks: switching.yml
+          tags: switching
 
       rescue:
         - name: abort writing config
