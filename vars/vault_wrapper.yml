@@ -27,6 +27,12 @@ opnsense:
   api:
     key: "{{ vault.opnsense.api.key }}"
     secret: "{{ vault.opnsense.api.secret }}"
+stevedore:
+  user_account:
+    root:
+      password: "{{ vault.stevedore.user_account.root.password }}"
+    freddie:
+      password: "{{ vault.stevedore.user_account.freddie.password }}"
 pikvm:
   user_account:
     root:
