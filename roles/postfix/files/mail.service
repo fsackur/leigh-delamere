@@ -10,7 +10,7 @@ LogsDirectory=mail
 StateDirectory=mail
 ConfigurationDirectory=mail
 WorkingDirectory=%E/mail
-LoadCredential=mail_passwd:/root/.secrets/mail_passwd
+LoadCredential=mail_passwd:/secrets/mail_passwd
 ExecStart=docker compose up --remove-orphans
 ExecStop=docker compose down
 

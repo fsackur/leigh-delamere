@@ -21,7 +21,7 @@ services:
       - ${LOGS_DIRECTORY:-./log/mail}:/var/log/mail
       - ${STATE_DIRECTORY:-./mail-state}:/var/mail-state
       # https://docker-mailserver.github.io/docker-mailserver/latest/config/advanced/mail-forwarding/relay-hosts/#advanced-configuration
-      - ${CREDENTIALS_DIRECTORY:-/root/.secrets}/mail_passwd:/tmp/docker-mailserver/postfix-sasl-password.cf
+      - ${CREDENTIALS_DIRECTORY:-/secrets}/mail_passwd:/tmp/docker-mailserver/postfix-sasl-password.cf
     environment:
       TZ: "Europe/London"
       POSTFIX_INET_PROTOCOLS: ipv4

@@ -1,7 +1,7 @@
 ---
 - name: _
   set_fact:
-    mail_passwd_file: /root/.secrets/mail_passwd
+    mail_passwd_file: /secrets/mail_passwd
 
 - name: pre-stage mail password
   lineinfile:

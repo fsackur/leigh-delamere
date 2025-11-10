@@ -8,6 +8,8 @@
       tags: sudo
     - role: stevedore
       tags: os
+    - role: base
+      tags: base
     - role: docker
       tags: docker
     - role: unifi

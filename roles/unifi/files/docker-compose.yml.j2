@@ -28,7 +28,7 @@ services:
       - "{{ host_addresses.unifi }}:5514:5514/udp"  # optional
     volumes:
       # variables populated by systemd. If running outside systemd, use equivalent folders in current dir
-      - ${CREDENTIALS_DIRECTORY:-./root/.secrets}/unifi_db_passwd:/unifi_db_passwd:ro
+      - ${CREDENTIALS_DIRECTORY:-/secrets}/unifi_db_passwd:/unifi_db_passwd:ro
       - ${CONFIGURATION_DIRECTORY:-.}/unifi-entrypoint.sh:/unifi-entrypoint.sh:ro
       - ${CONFIGURATION_DIRECTORY:-.}/config/:/config/:rw
       - ${CONFIGURATION_DIRECTORY:-.}/root/:/root/:rw
@@ -56,7 +56,7 @@ services:
       - ${CONFIGURATION_DIRECTORY:-.}/unifi-db-entrypoint.sh:/unifi-db-entrypoint.sh:ro
       - ${CONFIGURATION_DIRECTORY:-.}/db:/data/db
       - ${CONFIGURATION_DIRECTORY:-.}/configdb:/data/configdb
-      - ${CREDENTIALS_DIRECTORY:-./root/.secrets}/unifi_db_passwd:/unifi_db_passwd:ro
+      - ${CREDENTIALS_DIRECTORY:-/secrets}/unifi_db_passwd:/unifi_db_passwd:ro
     environment:
       MONGO_INITDB_ROOT_USERNAME: unifi
       MONGO_INITDB_ROOT_PASSWORD_FILE: /unifi_db_passwd

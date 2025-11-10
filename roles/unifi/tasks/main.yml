@@ -2,7 +2,7 @@
 - name: write unifi db password
   copy:
     content: "{{ unifi.db_password }}"
-    dest: /root/.secrets/unifi_db_passwd
+    dest: /secrets/unifi_db_passwd
     owner: root
     group: root
     mode: "0600"

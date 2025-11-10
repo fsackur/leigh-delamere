@@ -1,17 +1,24 @@
 ---
 - name: Install guest agent  # also needs to be enabled in proxmox
-  apt:
-    pkg: qemu-guest-agent
-    state: latest
-    autoclean: true
+  package:
+    name: qemu-guest-agent
 
-- name: Create .secrets directory
+- name: create secrets folder
   file:
-    path: /root/.secrets/
+    path: /secrets/
     state: directory
-    mode: "0700"
     owner: root
     group: root
+    mode: "0700"
+    # setype: systemd_passwd_var_run_t  # does not propagate
+  register: create_secrets_folder
+
+- name: set selinux label on secrets folder
+  shell:
+    cmd: |
+      semanage fcontext -a -t systemd_passwd_var_run_t "/secrets(/.*)?"
+      restorecon -rv /secrets
+  when: create_secrets_folder.changed
 
 - import_tasks: network.yml
   tags: network

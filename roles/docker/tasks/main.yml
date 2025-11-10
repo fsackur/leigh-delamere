@@ -1,39 +1,47 @@
 ---
-- name: add docker gpg apt key
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
+- name: test docker binary
+  stat:
+    path: /usr/bin/docker
+  register: docker
 
-- name: add docker repository
-  apt_repository:
-    repo: deb https://download.docker.com/linux/ubuntu mantic stable
-    state: present
+- when: not docker.stat.exists
+  block:
+    - name: add docker gpg apt key
+      rpm_key:
+        key: https://download.docker.com/linux/fedora/gpg
+        state: present
 
-- name: install docker
-  apt:
-    pkg:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-buildx-plugin
-      - docker-compose-plugin
-      - python3-docker
-    state: latest
-    update_cache: true
-    autoclean: true
+    - set_fact:
+        docker_packages:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+          - python3-docker
 
-- name: add "{{ ansible_user }}" to docker group
-  user:
-    name: "{{ ansible_user }}"
-    groups: docker
-    append: true
+    - name: add docker repository
+      yum_repository:
+        name: docker-ce
+        description: "Docker CE Stable - $basearch"
+        baseurl: https://download.docker.com/linux/fedora/$releasever/$basearch/stable
+        includepkgs: "{{ docker_packages }}"
+        state: present
 
-- name: add alias for dockerhub registry
-  lineinfile:
-    path: /etc/containers/registries.conf
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    insertafter: "{{ item.insertafter }}"
-  loop:
-    - { regexp: '^\[registries.search\]', line: '[registries.search]', insertafter: '$' }
-    - { regexp: '^registries *=', line: 'registries = ["docker.io"]', insertafter: '^\[registries.search\]' }
+    - name: install docker
+      dnf:
+        name: "{{ docker_packages }}"
+        state: latest
+        update_cache: true
+
+    - name: add ansible_user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: true
+
+- name: start docker
+  service:
+    name: docker
+    enabled: true
+    state: started
