@@ -1,0 +1,5 @@
+[carapace]
+name=Gemfury Private Repo for Carapace
+baseurl=https://yum.fury.io/rsteube/
+enabled=1
+gpgcheck=0

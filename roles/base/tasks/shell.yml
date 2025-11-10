@@ -29,6 +29,20 @@
     cmd: curl -fsLS starship.rs/install.sh | sh -s -- -y
     creates: /usr/local/bin/starship
 
+- name: add carapace repository
+  copy:
+    src: files/yum.repos.d/carapace.repo
+    dest: /etc/yum.repos.d/carapace.repo
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: install carapace
+  package:
+    name:
+      - carapace-bin
+      - carapace-bridge
+
 - name: copy powershell config
   copy:
     src: files/powershell.config.json
