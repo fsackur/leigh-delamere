@@ -1,0 +1,12 @@
+---
+- name: find latest backup
+  shell:
+    cmd: ls -t $(find /etc/unifi/backup/ | grep \.unf$) | head -n 1
+  register: latest_backup
+  changed_when: false
+
+- name: back up unifi network application config
+  fetch:
+    src: "{{ latest_backup.stdout }}"
+    dest: "{{ role_path }}/backups/unifi.unf"
+    flat: true

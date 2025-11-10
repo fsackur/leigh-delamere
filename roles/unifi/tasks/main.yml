@@ -19,6 +19,13 @@
     - root
     - backup
 
+- name: backup
+  import_tasks: backup.yml
+  when: backup in ansible_run_tags
+  tags:
+    - backup
+    - never
+
 - name: copy unifi docker-compose
   template:
     src: files/docker-compose.yml.j2
