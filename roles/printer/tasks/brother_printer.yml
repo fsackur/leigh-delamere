@@ -10,6 +10,7 @@
       scanner: https://download.brother.com/welcome/dlf104036/brscan5-1.3.5-0.x86_64.rpm
       scan_key_tool: https://download.brother.com/welcome/dlf006650/brscan-skey-0.3.2-0.x86_64.rpm
       udev_rule: https://download.brother.com/welcome/dlf103900/brother-udev-rule-type1-1.0.2-0.noarch.rpm
+    installer_created_printer_name: DCPL3520CDW
 
 - name: install libgtk and document scanner
   package:
@@ -34,7 +35,7 @@
 
 - name: remove printer created by installer
   shell:
-    cmd: lpadmin -x DCPL3520CDW
+    cmd: lpadmin -x {{ installer_created_printer_name }}
   register: remove_default_printer
   changed_when: remove_default_printer.rc == 0
   failed_when: remove_default_printer.rc != 0 and "does not exist" not in remove_default_printer.stderr
@@ -44,6 +45,7 @@
     cmd: lpstat -s
   register: lpstat
   changed_when: false
+  failed_when: lpstat.rc != 0 and "no system default destination" not in lpstat.stdout
 
 - name: add printer
   shell:
