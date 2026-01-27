@@ -2,10 +2,14 @@
 - set_fact:
     brother_printer:
       mac_address: 58:cd:c9:4c:d5:a6
-      ip_address: "10.7.7.166"
+      ip_address: "{{ ip_address }}"
       default_password: 70Gmc%iR
       model: DCP-L3520CDW
+      usb_uri: "usb://Brother/DCP-L3520CDW%20series?serial=E82389F4N546650"  # discovered with /usr/lib/cups/backend/usb
+      tcp_uri: "socket://{{ ip_address }}:9100"
     installer_created_printer_name: DCPL3520CDW
+  vars:
+    ip_address: "10.7.7.166"
 
 - import_tasks: drivers.yml
   tags: drivers
@@ -24,26 +28,28 @@
   changed_when: false
   failed_when: lpstat.rc != 0 and "no system default destination" not in lpstat.stdout
 
-- name: add printer
+- name: add printer  # use lpoptions -l to see all options
   shell:
     cmd: |
-      lpstat -v {{ name }} || \
-      lpadmin -p {{ name }} -D '{{ desc }}' -E -v {{ device_uri }} -m {{ model }}
+      lpstat -v '{{ name }}' || \
+      lpadmin -p '{{ name }}' -D '{{ desc }}' -E -v {{ device_uri }} -m {{ model }} \
+        -u allow:all \
+        -o printer-is-shared=false \
+        -o BRMonoColor={{ item.colour_mode }} \
+        -o Duplex=DuplexNoTumble
   register: add_printer
   changed_when: not ('device for' in add_printer.stdout)
   vars:
-    name: "{{ item.name }}"
-    desc: "{{ item.desc }}"
+    name: "brother_{{ item.name }}"
+    desc: "{{ brother_printer.model }} ({{ item.name }})"
     model: Brother/brother_dcpl3520cdw_printer_en.ppd
-    device_uri: "{{ item.device_uri }}"
+    device_uri: "{{ brother_printer.usb_uri if ansible_hostname == 'harriet-desktop' else brother_printer.tcp_uri }}"
     ppd_file: /usr/share/cups/model/Brother/brother_dcpl3520cdw_printer_en.ppd
   loop:
-    - name: brother_wifi
-      desc: "Brother {{ brother_printer.model }} (wifi)"
-      device_uri: socket://{{ brother_printer.ip_address }}:9100
-    - name: brother_usb
-      desc: "Brother {{ brother_printer.model }} (usb)"
-      device_uri: usb://Brother/DCP-L3520CDW%20series?serial=E82389F4N546650  # discovered with /usr/lib/cups/backend/usb
+    - name: colour
+      colour_mode: FullColor
+    - name: monochrome
+      colour_mode: Mono
 
 - name: set default printer
   when: ansible_hostname in [ 'harriet-desktop', 'harriet-laptop' ]
@@ -54,7 +60,7 @@
   register: set_default_printer
   changed_when: not 'system default destination' in set_default_printer.stdout
   vars:
-    default_printer: "{{ 'brother_usb' if ansible_hostname == 'harriet-desktop' else 'brother_wifi' }}"
+    default_printer: brother_monochrome
 
 - name: register network scanner
   shell:
