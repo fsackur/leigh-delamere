@@ -21,6 +21,18 @@
   changed_when: remove_default_printer.rc == 0
   failed_when: remove_default_printer.rc != 0 and "does not exist" not in remove_default_printer.stderr
 
+- name: deny auto-discovered printer
+  lineinfile:
+    path: /etc/cups/cups-browsed.conf
+    line: BrowseDeny {{ brother_printer.ip_address }}
+  register: cups_browsed_conf
+
+- name: restart cups
+  when: cups_browsed_conf.changed
+  service:
+    name: cups
+    state: restarted
+
 - name: check printers
   shell:
     cmd: lpstat -s
