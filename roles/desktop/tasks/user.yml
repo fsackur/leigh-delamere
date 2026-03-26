@@ -5,6 +5,7 @@
       - clevis
       - seahorse
       - pam_script
+      - python3-passlib
 
 - name: create nopasswdlogin group
   group:
