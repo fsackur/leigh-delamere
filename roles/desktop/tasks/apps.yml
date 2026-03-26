@@ -2,6 +2,7 @@
 - name: install base packages
   package:
     name:
+      - thunderbird
       - kitty
       - dirmngr
       - mc
@@ -17,7 +18,6 @@
   flatpak:
     name:
       - us.zoom.Zoom
-      - org.gnome.Geary  # email
       - org.chromium.Chromium
       - org.kde.okular  # pdf view/edit
     method: system
