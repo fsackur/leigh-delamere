@@ -25,6 +25,7 @@
       - xauth  # for ssh X11 forwarding
       - fzf
       - htop
+      - code
     debian_exclude:
       - yq
     fedora_exclude:
@@ -52,6 +53,14 @@
       shell:
         cmd: "dnf install -y dnf5 python3-libdnf5"
         creates: /usr/share/licenses/python3-libdnf5
+
+    - name: add microsoft repository
+      copy:
+        src: files/vscode.repo
+        dest: /etc/yum.repos.d/vscode.repo
+        owner: root
+        group: root
+        mode: "0644"
 
     - name: upgrade packages
       dnf:

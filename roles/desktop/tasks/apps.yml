@@ -1,20 +1,10 @@
 ---
-- name: add microsoft repository
-  copy:
-    src: files/vscode.repo
-    dest: /etc/yum.repos.d/vscode.repo
-    owner: root
-    group: root
-    mode: "0644"
-  tags: dnf
-
 - name: install base packages
   package:
     name:
       - kitty
       - dirmngr
       - mc
-      - code
       - fontconfig
       - gparted
       - wine
