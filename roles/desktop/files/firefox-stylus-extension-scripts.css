@@ -1,0 +1,11 @@
+/* Install Stylus extension */
+
+/* Replace Symbol font (in mail from Apple users) */
+@-moz-document domain("outlook.live.com") {
+    font[face^="Symbol"] {
+        font-family: "sans-serif" !important;
+    }
+    *[style^="font-family: Symbol"] {
+        font-family: "sans-serif" !important;
+    }
+}
