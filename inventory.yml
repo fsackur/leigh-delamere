@@ -26,6 +26,8 @@ all:
         include_network: true
         include_timeshift: false
     backoops:
+    laksa:
+      primary_user: karen
 cisco:
   hosts:
     cisco-1:
