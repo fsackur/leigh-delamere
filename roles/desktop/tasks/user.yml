@@ -6,6 +6,9 @@
       - seahorse
       - pam_script
       - python3-passlib
+      - python3-passlib+argon2.noarch
+      - python3-passlib+bcrypt.noarch
+      - python3-passlib+totp.noarch
 
 - name: create nopasswdlogin group
   group:
