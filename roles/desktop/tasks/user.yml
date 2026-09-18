@@ -33,7 +33,7 @@
 - name: create user for {{ primary_user }}
   user:
     name: "{{ primary_user }}"
-    comment: "{{ primary_user }}"
+    comment: "{{ primary_user | capitalize }}"
     expires: -1
     createhome: true
     groups:
