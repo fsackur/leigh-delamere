@@ -12,7 +12,7 @@
     name:
       - fontconfig
       - liberation-fonts-all
-      - wine-fonts
+      - wine-winefonts
     state: latest
 
 - name: ensure fonts directory
