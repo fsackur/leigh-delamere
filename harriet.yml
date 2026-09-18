@@ -34,4 +34,5 @@
       tags: remote_desktop
     - role: printer
       tags: printer
+    - role: photobook
   become: true

@@ -1,0 +1,40 @@
+---
+- name: create temp folder for bob
+  file:
+    path: /tmp/bob/
+    state: directory
+
+- name: download bob designer installer
+  unarchive:
+    remote_src: true
+    src: https://dls.photoprintit.com/download/Data/18853-en_GB/hps/setup_Bob_Designer.tgz
+    dest: /tmp/bob/
+    owner: root
+    group: root
+
+- name: install bob designer dependencies
+  package:
+    name:
+      - p7zip
+      - libxcrypt-compat
+
+- name: link 7za to 7z
+  file:
+    src: /usr/bin/7za
+    path: /usr/bin/7z
+    state: link
+
+- name: comment out eula
+  shell:
+    cmd: sed -i -E 's/^(\s*showEula())/# \1/g' /tmp/bob/install.pl
+
+- name: install bob designer
+  shell:
+    cmd: echo "" | /tmp/bob/install.pl --installDir='/home/harriet/Bob Designer' --workingDir=/tmp/bob/
+    creates: /home/harriet/Bob Designer/Bob Designer
+  become_user: harriet
+
+- name: clean up temp folder
+  file:
+    path: /tmp/bob/
+    state: absent
