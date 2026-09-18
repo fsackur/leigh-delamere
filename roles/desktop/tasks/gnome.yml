@@ -6,48 +6,23 @@
     state: "{{ 'present' if ansible_facts.distribution_version == '41' else 'absent' }}"
   when: ansible_facts.distribution == "Fedora"
 
-- name: install packaged extensions
+- name: install gnome accessories
   package:
     name:
       - gnome-extensions-app
-      - gnome-shell-extension-launch-new-instance
-      - gnome-shell-extension-dash-to-panel
-      - gnome-shell-extension-user-theme
       - gnome-menus
       - gnome-tweaks
       - xdg-utils
       - gnome-monitor-config  # only works while there's an interactive session. Just set it manually.
 
+- name: install packaged extensions
+  package:
+    name: "{{ extensions.packaged | map(attribute='package') }}"
+
 - name: install extension manager
   flatpak:
     name: com.mattjakeman.ExtensionManager
     method: system
-
-- name: declare required extensions
-  set_fact:
-    extensions:
-      - name: PaperWM
-        id: paperwm@paperwm.github.com
-        user: freddie
-      - name: Just Perfection
-        id: just-perfection-desktop@just-perfection
-        user: freddie
-      - name: User Themes
-        id: user-theme@gnome-shell-extensions.gcampax.github.com
-        user: "{{ primary_user }}"
-      - name: Dash to Panel
-        id: dash-to-panel@jderose9.github.com
-        user: "{{ primary_user }}"
-      - name: ArcMenu
-        id: arcmenu@arcmenu.com
-        user: "{{ primary_user }}"
-      - name: Hide Top Bar
-        id: hidetopbar@mathieu.bidon.ca
-        user: "{{ primary_user }}"
-      - name: No overview at start-up
-        id: no-overview@fthx
-        user: "{{ primary_user }}"
-  tags: gnome_shell_extensions
 
 - name: ensure extension folder
   file:
@@ -59,12 +34,14 @@
   tags: gnome_shell_extensions
 
 - include_tasks:
-    file: install_gnome_extension.yml
+    file: install_gnome_extensions.yml
     apply:
       tags: gnome_shell_extensions
-  loop: "{{ extensions }}"
+  loop:
+    - freddie
+    - "{{ primary_user }}"
   loop_control:
-    loop_var: extension
+    loop_var: _user
   tags: gnome_shell_extensions
 
 - name: enable extensions for {{ primary_user }}
@@ -73,8 +50,10 @@
     user: "{{ primary_user }}"
     dconf_settings: |
       [org/gnome/shell]
-      enabled-extensions=['launch-new-instance@gnome-shell-extensions.gcampax.github.com', 'dash-to-panel@jderose9.github.com', 'arcmenu@arcmenu.com', 'no-overview@fthx']
+      enabled-extensions={{ user_extensions[primary_user] }}
   tags: gnome_shell_extensions
+  # Seems to just work, although I think it shouldn't...
+  # Here's the jinja, in case it breaks: "'{{ user_extensions[primary_user] | join(\"', '\") }}'"
 
 - name: configure extension settings for {{ primary_user }}
   include_tasks: set_dconf.yml

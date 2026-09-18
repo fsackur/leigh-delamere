@@ -1,0 +1,35 @@
+extensions:
+  packaged:
+    - name: Launch New Instance
+      id: launch-new-instance@gnome-shell-extensions.gcampax.github.com
+      package: gnome-shell-extension-launch-new-instance
+    - name: Dash to Panel
+      id: dash-to-panel@jderose9.github.com
+      package: gnome-shell-extension-dash-to-panel
+    - name: User Themes
+      id: user-theme@gnome-shell-extensions.gcampax.github.com
+      package: gnome-shell-extension-user-theme
+  non_packaged:
+    - name: PaperWM
+      id: paperwm@paperwm.github.com
+    - name: Just Perfection
+      id: just-perfection-desktop@just-perfection
+    - name: ArcMenu
+      id: arcmenu@arcmenu.com
+    - name: Hide Top Bar
+      id: hidetopbar@mathieu.bidon.ca
+    - name: No overview at start-up
+      id: no-overview@fthx
+user_extensions:
+  freddie:
+    - launch-new-instance@gnome-shell-extensions.gcampax.github.com
+    - paperwm@paperwm.github.com
+    - just-perfection-desktop@just-perfection
+  harriet:
+    - launch-new-instance@gnome-shell-extensions.gcampax.github.com
+    - dash-to-panel@jderose9.github.com
+    - arcmenu@arcmenu.com
+    - no-overview@fthx
+  karen:
+    - launch-new-instance@gnome-shell-extensions.gcampax.github.com
+    - no-overview@fthx

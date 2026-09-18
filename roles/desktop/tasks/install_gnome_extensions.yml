@@ -1,0 +1,9 @@
+---
+- include_tasks:
+    file: install_gnome_extension.yml
+    apply:
+      tags: gnome_shell_extensions
+  loop: "{{ extensions.non_packaged }}"
+  loop_control:
+    loop_var: extension
+  tags: gnome_shell_extensions

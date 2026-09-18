@@ -5,9 +5,9 @@
 # If you are not logged in, it will time out.
 #
 
-- name: test {{ extension.name }} path for {{ extension.user }}
+- name: test {{ extension.name }} path for {{ _user }}
   stat:
-    path: /home/{{ extension.user }}/.local/share/gnome-shell/extensions/{{ extension.id }}
+    path: /home/{{ _user }}/.local/share/gnome-shell/extensions/{{ extension.id }}
   register: extension_folder
 
 - when: not extension_folder.stat.exists
@@ -15,18 +15,18 @@
     - include_tasks:
         file: prompt_interactive_session.yml
       vars:
-        interactive_user: "{{ extension.user }}"
+        interactive_user: "{{ _user }}"
 
-    - when: not logged_in_interactively[extension.user]
+    - when: not logged_in_interactively[_user]
       fail:
-        msg: "Cannot install gnome shell extension: {{ extension.user }} is not logged in interactively."
+        msg: "Cannot install gnome shell extension: {{ _user }} is not logged in interactively."
 
-    - when: logged_in_interactively[extension.user]
+    - when: logged_in_interactively[_user]
       fail:
-        msg: "Click on the installation prompt in {{ extension.user }}'s desktop session..."
+        msg: "Click on the installation prompt in {{ _user }}'s desktop session..."
       ignore_errors: true
 
     - name: install {{ extension.name }}
       shell:
-        cmd: busctl --machine={{ extension.user }}@.host --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell.Extensions InstallRemoteExtension s {{ extension.id }}
-        creates: /home/{{ extension.user }}/.local/share/gnome-shell/extensions/{{ extension.id }}
+        cmd: busctl --machine={{ _user }}@.host --user call org.gnome.Shell /org/gnome/Shell org.gnome.Shell.Extensions InstallRemoteExtension s {{ extension.id }}
+        creates: /home/{{ _user }}/.local/share/gnome-shell/extensions/{{ extension.id }}
