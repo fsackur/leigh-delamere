@@ -71,16 +71,10 @@
     - reset_password
     - never
 
-- name: ensure dconf text overlay is present
-  copy:
-    content: ""
-    force: false
-    dest: /home/{{ user_ }}/.config/dconf/user.txt
-    owner: "{{ user_ }}"
-    group: "{{ user_ }}"
-    mode: "0644"
+- name: disable screen lock for {{ primary_user }}
+  include_tasks: dconf.yml
   vars:
-    user_: "{{ primary_user }}"
+    user: "{{ primary_user }}"
 
 - name: enable automatic timed login for {{ primary_user }}
   when: enable_automatic_login | default(False)
