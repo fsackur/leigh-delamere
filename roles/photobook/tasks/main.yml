@@ -1,4 +1,9 @@
 ---
+- import_tasks: bookwright.yml
+  tags:
+    - bookwright
+    - never
+
 - import_tasks: bob_designer.yml
   tags:
     - bob_designer
