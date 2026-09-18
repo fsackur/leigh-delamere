@@ -12,17 +12,10 @@
 
 - when: not extension_folder.stat.exists
   block:
-    - when: logged_in_interactively is undefined or not logged_in_interactively[extension.user]
-      block:
-        - name: check interactive login
-          shell:
-            cmd: loginctl | grep -e "{{ extension.user }}\s*seat"
-          changed_when: false
-          failed_when: false
-          register: interactive_login
-
-        - set_fact:
-            logged_in_interactively: "{{ {extension.user: interactive_login.rc == 0} }}"
+    - include_tasks:
+        file: prompt_interactive_session.yml
+      vars:
+        interactive_user: "{{ extension.user }}"
 
     - when: not logged_in_interactively[extension.user]
       fail:

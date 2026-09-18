@@ -143,15 +143,27 @@
   vars:
     user_passwd_file: /home/{{ primary_user }}/.passwd-tpm
 
-- name: enable gnome-keyring-unlock service
-  shell:
-    cmd: |
-      export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
-      systemctl --user daemon-reload && \
-      systemctl --user enable gnome-keyring-unlock
-  register: enable_gnome_keyring_unlock
-  changed_when: enable_gnome_keyring_unlock.stderr
-  become_user: "{{ primary_user }}"
+- block:
+    - include_tasks:
+        file: prompt_interactive_session.yml
+      vars:
+        interactive_user: "{{ primary_user }}"
+
+    - when: not logged_in_interactively[primary_user]
+      fail:
+        msg: "Cannot enable gnome-keyring-unlock service: {{ primary_user }} is not logged in interactively."
+      ignore_errors: true
+
+    - when: logged_in_interactively[primary_user]
+      name: enable gnome-keyring-unlock service
+      shell:
+        cmd: |
+          export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
+          systemctl --user daemon-reload && \
+          systemctl --user enable gnome-keyring-unlock
+      register: enable_gnome_keyring_unlock
+      changed_when: enable_gnome_keyring_unlock.stderr
+      become_user: "{{ primary_user }}"
 
 - include_tasks: ../../common/install_selinux_policy.yml
   loop:

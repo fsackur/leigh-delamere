@@ -1,0 +1,15 @@
+---
+- set_fact:
+    interactive_user: "{{ interactive_user }}"
+
+- when: logged_in_interactively is undefined or logged_in_interactively[interactive_user] is undefined or not logged_in_interactively[interactive_user]
+  block:
+    - name: check interactive login
+      shell:
+        cmd: loginctl | grep -e "{{ interactive_user }}\s*seat"
+      changed_when: false
+      failed_when: false
+      register: interactive_login
+
+    - set_fact:
+        logged_in_interactively: "{{ {interactive_user: interactive_login.rc == 0} }}"
