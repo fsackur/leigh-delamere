@@ -17,9 +17,19 @@
     owner: gnome-remote-desktop
     group: gnome-remote-desktop
 
+- name: clear rdp cert
+  file:
+    path: "{{ rdp_cert_folder }}/rdp-tls.crt"
+    state: absent
+  when: "{{ 'regenerate_rdp_cert' in ansible_run_tags }}"
+  tags:
+    - regenerate_rdp_cert
+    - never
+
 - name: generate system rdp cert
   shell:
-    cmd: sudo -u gnome-remote-desktop winpr-makecert -silent -rdp -n {{ ansible_hostname }}.leigh.delamere -path {{ rdp_cert_folder }} rdp-tls
+    # cmd: sudo -u gnome-remote-desktop winpr-makecert -silent -rdp -n {{ ansible_hostname }}.leigh.delamere -path {{ rdp_cert_folder }} rdp-tls
+    cmd: sudo -u gnome-remote-desktop winpr-makecert -silent -rdp -path {{ rdp_cert_folder }} rdp-tls
     creates: "{{ rdp_cert_folder }}/rdp-tls.crt"
 
 - name: configure system rdp
