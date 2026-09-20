@@ -31,6 +31,8 @@
       tags: remote_desktop
     - role: vpn_client
       tags: vpn_client
+    - role: tailscale
+      tags: tailscale
   tasks:
     - import_tasks: roles/printer/tasks/allow_user.yml
       tags: printer
