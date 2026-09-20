@@ -1,0 +1,45 @@
+---
+- name: install openvpn
+  package:
+    name:
+      - openvpn
+      - NetworkManager
+      - NetworkManager-openvpn-gnome
+
+- name: copy VPN config
+  copy:
+    src: files/Hobbys-VPN.ovpn
+    dest: /etc/NetworkManager/system-connections/
+    owner: root
+    group: root
+    mode: "0644"
+  register: vpn_config
+
+- name: examine existing connections
+  shell:
+    cmd: nmcli connection | grep '^Hobbys-VPN ' || true
+  changed_when: false
+  register: vpn_connections
+
+- set_fact:
+    should_create_vpn: "{{ (vpn_connections.stdout_lines | length) == 0 }}"
+    should_recreate_vpn: "{{ vpn_config.changed or (vpn_connections.stdout_lines | length > 1) }}"
+
+- name: create VPN connection
+  when: should_create_vpn
+  shell:
+    cmd: nmcli connection import type openvpn file /etc/NetworkManager/system-connections/Hobbys-VPN.ovpn
+
+- name: recreate VPN connection
+  when: should_recreate_vpn
+  shell:
+    cmd: |
+      nmcli connection delete Hobbys-VPN
+      nmcli connection import type openvpn file /etc/NetworkManager/system-connections/Hobbys-VPN.ovpn
+
+- name: set VPN credentials
+  shell:
+    cmd: |
+      nmcli connection modify Hobbys-VPN +vpn.data password-flags=0 &&
+      nmcli connection modify Hobbys-VPN vpn.user-name {{ primary_user }} &&
+      nmcli connection modify Hobbys-VPN +vpn.secrets "password={{ openvpn[primary_user].password }}"

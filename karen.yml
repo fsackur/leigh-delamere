@@ -29,6 +29,8 @@
       tags: desktop
     - role: remote_desktop
       tags: remote_desktop
+    - role: vpn_client
+      tags: vpn_client
   tasks:
     - import_tasks: roles/printer/tasks/allow_user.yml
       tags: printer

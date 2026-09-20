@@ -8,6 +8,11 @@ user_account:
     password: "{{ vault.user_account.admin.password }}"
   karen:
     password: "{{ vault.user_account.karen.password }}"
+openvpn:
+  vpn_user:
+    password: "{{ vault.openvpn.vpn_user.password }}"
+  karen:
+    password: "{{ vault.openvpn.karen.password }}"
 vnc:
   harriet-desktop:
     password: "{{ vault.vnc['harriet-desktop'].password }}"

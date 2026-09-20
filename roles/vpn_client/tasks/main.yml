@@ -1,0 +1,3 @@
+---
+- import_tasks: open_vpn.yml
+  tags: open_vpn
