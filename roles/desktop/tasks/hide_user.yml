@@ -1,0 +1,12 @@
+---
+- lineinfile:
+    path: /var/lib/AccountsService/users/{{ user_to_hide }}
+    search_string: SystemAccount=
+    line: SystemAccount=true
+  register: system_account
+
+- name: restart accounts daemon
+  when: system_account.changed
+  service:
+    name: accounts-daemon
+    state: restarted
