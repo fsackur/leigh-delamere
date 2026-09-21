@@ -6,4 +6,4 @@
 # - browse to printer web mgmt page
 # - Network > Protocols > untick mDNS
 - import_tasks: brother_printer.yml
-  tags: printer
+  tags: brother_printer

@@ -36,5 +36,4 @@
   tasks:
     - import_tasks: roles/printer/tasks/allow_user.yml
       tags: printer
-
   become: true

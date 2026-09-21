@@ -4,3 +4,37 @@
     src: ../files/50-allow-print-management.rules
     dest: /etc/polkit-1/rules.d/50-allow-print-management.rules
     mode: "0644"
+
+- name: create cups-admin group
+  group:
+    name: cups-admin
+    system: true
+  register: cups_create_group
+
+- name: read cups system groups
+  shell:
+    cmd: grep '^SystemGroup\b' /etc/cups/cups-files.conf
+  changed_when: false
+  register: cups_system_groups
+
+- name: add cups-admin to cups config
+  when: "'cups-admin' not in cups_system_groups.stdout_lines[-1]"
+  lineinfile:
+    path: /etc/cups/cups-files.conf
+    search_string: "{{ cups_system_groups.stdout_lines[-1] }}"
+    line: "{{ cups_system_groups.stdout_lines[-1] + ' cups-admin' }}"
+  register: cups_apply_group
+
+- name: restart cups
+  when: cups_create_group.changed or cups_apply_group.changed
+  service:
+    name: cups
+    state: restarted
+
+- name: add user to cups-admin
+  when: primary_user is defined
+  user:
+    name: "{{ primary_user }}"
+    groups:
+      - cups-admin
+    append: true
