@@ -10,3 +10,13 @@
   service:
     name: accounts-daemon
     state: restarted
+
+- name: install xdotool
+  package:
+    name: xdotool
+
+- name: copy switch-user command
+  copy:
+    src: files/switch-user
+    dest: /usr/local/bin/
+    mode: "0755"
