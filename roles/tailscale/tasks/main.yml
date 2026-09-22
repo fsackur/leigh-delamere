@@ -1,13 +1,7 @@
 ---
-- set_fact:
-    tailscale_package: "{{ tailscale_package | default('tailscale') }}"
-    tailscale_advertise_routes: "{{ '--advertise-routes ' + routes if routes else '' }}"
-  vars:
-    routes: "{{ tailscale_advertise_routes | default([]) | join(',') }}"
-
 - name: install tailscale
   package:
-    name: "{{ tailscale_package }}"
+    name: "{{ tailscale_package | default('tailscale') }}"
 
 - name: add bash completions
   shell:
@@ -21,29 +15,55 @@
     enabled: true
     state: started
 
-- name: connect to tailscale
+- name: check tailscale status
   shell:
-    cmd: tailscale up --timeout 3s --accept-routes {{ tailscale_advertise_routes }} 2>&1
-  register: tailscale_login
-  timeout: 8
+    cmd: tailscale status
   failed_when: false
+  changed_when: false
+  register: tailscale_status
 
-- when: tailscale_login.rc != 0
-  block:
-    - set_fact:
-        waiting_auth: "{{
-          tailscale_login.stdout_lines
-          | select('match', '.*To authenticate, visit.*')
-          | length > 0 }}"
+- set_fact:
+    tailscale_status: >-
+      {%- if tailscale_status.rc == 0 -%}
+        up
+      {%- elif 'Tailscale is stopped.' in tailscale_status.stdout_lines -%}
+        down
+      {%- elif 'Logged out.' in tailscale_status.stdout_lines -%}
+        logged_out
+      {%- else -%}
+        {{ tailscale_status.stderr }}
+      {%- endif -%}
 
-    - when: waiting_auth
-      pause:
-        prompt: "Authenticate by visiting this URL in your browser: {{
-          tailscale_login.stdout_lines
-          | select('match', '.*https.*')
-          | first
-          | regex_replace('\\s+|$', '  ') }}"
+- when: tailscale_status not in ['up', 'down', 'logged_out']
+  fail:
+    msg: "{{ tailscale_status }}"
 
-    - when: not waiting_auth
-      fail:
-        msg: "{{ tailscale_login.stdout }}"
+- name: connect to tailscale
+  when: tailscale_status == 'logged_out'
+  shell:
+    cmd: tailscale up --auth-key={{ tailscale_token }}?ephemeral=false --advertise-tags tag:{{ tailscale_tag }}
+  vars:
+    tailscale_token: "{{ tailscale.oauth[tailscale_tag].client_secret }}"
+  no_log: true
+
+- name: start tailscale
+  when: tailscale_status == 'down'
+  shell:
+    cmd: tailscale up
+
+- name: allow tailscale without sudo
+  shell:
+    cmd: tailscale set --operator {{ ansible_user }}
+
+- name: accept tailscale routes
+  shell:
+    cmd: tailscale set --accept-routes
+
+- name: advertise tailscale routes
+  when: tailscale_advertise_routes is defined
+  shell:
+    cmd: tailscale set --advertise-routes {{ tailscale_advertise_routes | join(',') }}
+
+- name: accept tailscale ssh
+  shell:
+    cmd: tailscale set --ssh

@@ -18,6 +18,7 @@ all:
       ansible_python_interpreter: /usr/local/bin/python3
     pikvm:
       ansible_remote_tmp: /tmp/ansible
+      tailscale_tag: infra
     proxbox:
       proxmox_backup:
         cron: "09:00"
@@ -32,6 +33,7 @@ all:
         cron: "04:00"
         apply: true
         reboot: true
+      tailscale_tag: end-user
 cisco:
   hosts:
     cisco-1:

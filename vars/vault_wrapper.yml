@@ -76,3 +76,6 @@ cisco:
     password: "{{ vault.cisco['cisco-1'].password }}"
   cisco-2:
     password: "{{ vault.cisco['cisco-2'].password }}"
+tailscale:
+  tailnet_id: "{{ vault.tailscale.tailnet_id }}"
+  oauth: "{{ vault.tailscale.oauth }}"
