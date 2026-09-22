@@ -28,6 +28,10 @@ all:
     backoops:
     laksa:
       primary_user: karen
+      automatic_update:
+        cron: "04:00"
+        apply: true
+        reboot: true
 cisco:
   hosts:
     cisco-1:

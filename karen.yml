@@ -25,6 +25,8 @@
       tags: sudo
     - role: base
       tags: base
+    - role: automatic_updates
+      tags: automatic_updates
     - role: desktop
       tags: desktop
     - role: remote_desktop

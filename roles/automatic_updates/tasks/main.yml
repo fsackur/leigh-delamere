@@ -1,0 +1,24 @@
+---
+- name: install dnf-automatic
+  package:
+    name: dnf-automatic  # alias for dnf5-plugin-automatic
+
+- name: configure automatic update schedule
+  template:
+    src: files/dnf5-automatic.timer.j2
+    dest: /etc/systemd/system/dnf5-automatic.timer.d/override.conf
+  vars:
+    cron: "{{ automatic_update.cron | default('04:00') }}"
+
+- name: configure automatic update action
+  template:
+    src: files/automatic.conf.j2
+    dest: /etc/dnf/automatic.conf
+  vars:
+    apply: "{{ automatic_update.apply | default(False) }}"
+    reboot: "{{ automatic_update.reboot | default(False) }}"
+
+- name: enable automatic update timer
+  service:
+    name: dnf-automatic.timer
+    enabled: true
