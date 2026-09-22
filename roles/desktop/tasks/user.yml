@@ -1,4 +1,10 @@
 ---
+- set_fact:
+    automatic_login: "{{ _automatic_login }}"
+    passwordless_login: "{{ _automatic_login or passwordless_login | default(False) }}"
+  vars:
+    _automatic_login: "{{ automatic_login | default(false) }}"
+
 - name: install utils
   package:
     name:
@@ -38,7 +44,7 @@
     createhome: true
     groups:
       - wheel
-      - nopasswdlogin
+      - "{{ 'nopasswdlogin' if passwordless_login else None }}"
     append: true
   register: create_account
 
@@ -80,7 +86,7 @@
     user: "{{ primary_user }}"
 
 - name: enable automatic timed login for {{ primary_user }}
-  when: enable_automatic_login | default(False)
+  when: automatic_login
   shell:
     cmd: grep TimedLogin {{ gdm_conf_path }} || sed -i 's/\[daemon\]/[daemon]\n{{ '\n'.join(timed_login_settings) }}/g' {{ gdm_conf_path }}
   register: edit_gdm_custom_conf
