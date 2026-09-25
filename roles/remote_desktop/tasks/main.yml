@@ -1,5 +1,5 @@
 ---
-- include_tasks: ../../common/install_selinux_policy.yml
+- include_tasks: "{{ role_path }}/../common/install_selinux_policy.yml"
   vars:
     selinux_module: gnome-remote-desktop
 
@@ -28,7 +28,6 @@
 
 - name: generate system rdp cert
   shell:
-    # cmd: sudo -u gnome-remote-desktop winpr-makecert -silent -rdp -n {{ ansible_hostname }}.leigh.delamere -path {{ rdp_cert_folder }} rdp-tls
     cmd: sudo -u gnome-remote-desktop winpr-makecert -silent -rdp -path {{ rdp_cert_folder }} rdp-tls
     creates: "{{ rdp_cert_folder }}/rdp-tls.crt"
 
@@ -42,7 +41,7 @@
 
 - name: set system rdp password
   shell:
-    cmd: grdctl --system rdp set-credentials {{ primary_user }} "{{ vnc[ansible_hostname].password }}"
+    cmd: grdctl --system rdp set-credentials {{ primary_user }} "{{ vnc[inventory_hostname].password }}"
   no_log: true
 
 - name: enable system rdp
@@ -65,7 +64,7 @@
 
     - name: generate user rdp cert
       shell:
-        cmd: winpr-makecert -silent -rdp -n {{ ansible_hostname }}.leigh.delamere -path {{ rdp_cert_folder }} rdp-tls
+        cmd: winpr-makecert -silent -rdp -n {{ inventory_hostname }}.leigh.delamere -path {{ rdp_cert_folder }} rdp-tls
         creates: "{{ rdp_cert_folder }}/rdp-tls.crt"
 
     - name: configure rdp desktop sharing
@@ -81,7 +80,7 @@
       shell:
         cmd: |
           export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" && \
-          grdctl rdp set-credentials {{ primary_user }} "{{ vnc[ansible_hostname].password }}"
+          grdctl rdp set-credentials {{ primary_user }} "{{ vnc[inventory_hostname].password }}"
       no_log: true
 
     - name: configure vnc desktop sharing
@@ -91,7 +90,7 @@
           grdctl vnc enable && \
           grdctl vnc disable-view-only && \
           grdctl vnc set-auth-method password && \
-          grdctl vnc set-password "{{ vnc[ansible_hostname].password | truncate(8, True, '') }}"
+          grdctl vnc set-password "{{ vnc[inventory_hostname].password | truncate(8, True, '') }}"
       no_log: true
 
     - name: enable desktop sharing

@@ -1,4 +1,6 @@
 all:
+  vars:
+    printer:
   hosts:
     harriet-desktop:
       proxmox_backup:

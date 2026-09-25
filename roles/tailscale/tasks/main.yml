@@ -38,6 +38,9 @@
   fail:
     msg: "{{ tailscale_status }}"
 
+- pause:
+    prompt: Starting tailscale. This may drop the connection
+
 - name: connect to tailscale
   when: tailscale_status == 'logged_out'
   shell:

@@ -14,6 +14,7 @@
 # echo "AcceptEnv LANG LC_*" | sudo tee /etc/ssh/sshd_config.d/10-ansible.conf
 
 - name: Karen's laptop
+  gather_facts: false
   hosts:
     - laksa
   vars_files:
@@ -35,7 +36,6 @@
       tags: vpn_client
     - role: tailscale
       tags: tailscale
-  tasks:
-    - import_tasks: roles/printer/tasks/allow_user.yml
+    - role: printer
       tags: printer
   become: true
