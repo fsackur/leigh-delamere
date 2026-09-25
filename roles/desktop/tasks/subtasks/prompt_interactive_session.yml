@@ -1,0 +1,54 @@
+---
+- set_fact:
+    interactive_user: "{{ interactive_user }}"
+    msg_logged_in: "{{ msg_logged_in | default('') }}"
+    msg_not_logged_in: "{{ msg_not_logged_in | default(interactive_user + ' is not logged in') }}"
+    pause_not_logged_in: "{{ pause_not_logged_in | default(True) }}"
+    ignore_not_logged_in: "{{ ignore_not_logged_in | default(False) }}"
+    logged_in_interactively: "{{ logged_in_interactively | default({}) }}"
+
+- when: |
+    logged_in_interactively is undefined or
+    logged_in_interactively[interactive_user] is undefined or
+    not logged_in_interactively[interactive_user]
+  block:
+    - name: check interactive login
+      shell:
+        cmd: loginctl | grep -e "{{ interactive_user }}\s*seat"
+      changed_when: false
+      failed_when: false
+      register: interactive_login
+
+    - set_fact:
+        logged_in_interactively: "{{
+            logged_in_interactively | combine({interactive_user: interactive_login.rc == 0})
+          }}"
+
+- name: "{{ interactive_user }} is logged in"
+  when: logged_in_interactively[interactive_user] and msg_logged_in != ''
+  debug:
+    msg: "{{ msg_logged_in }}"
+
+- when: not logged_in_interactively[primary_user] and pause_not_logged_in
+  block:
+    - name: "{{ interactive_user }} is not logged in: waiting"
+      pause:
+        prompt: "{{ msg_not_logged_in }}"
+
+    - name: check interactive login
+      shell:
+        cmd: loginctl | grep -e "{{ interactive_user }}\s*seat"
+      changed_when: false
+      failed_when: false
+      register: interactive_login
+
+    - set_fact:
+        logged_in_interactively: "{{
+            logged_in_interactively | combine({interactive_user: interactive_login.rc == 0})
+          }}"
+
+- name: "{{ interactive_user }} is not logged in"
+  when: not logged_in_interactively[primary_user] and not pause_not_logged_in
+  ignore_errors: "{{ ignore_not_logged_in | default(False) }}"
+  fail:
+    msg: "{{ msg_not_logged_in }}"

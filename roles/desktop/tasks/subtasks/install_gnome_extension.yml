@@ -12,19 +12,16 @@
 
 - when: not extension_folder.stat.exists
   block:
-    - include_tasks:
-        file: prompt_interactive_session.yml
+    - include_tasks: subtasks/prompt_interactive_session.yml
       vars:
         interactive_user: "{{ _user }}"
-
-    - when: not logged_in_interactively[_user]
-      fail:
-        msg: "Cannot install gnome shell extension: {{ _user }} is not logged in interactively."
+        msg_not_logged_in: "Cannot install gnome shell extension: {{ _user }} is not logged in interactively"
+        pause_not_logged_in: true
+        ignore_not_logged_in: false
 
     - when: logged_in_interactively[_user]
-      fail:
-        msg: "Click on the installation prompt in {{ _user }}'s desktop session..."
-      ignore_errors: true
+      pause:
+        prompt: "Click on the installation prompt in {{ _user }}'s desktop session"
 
     - name: install {{ extension.name }}
       shell:

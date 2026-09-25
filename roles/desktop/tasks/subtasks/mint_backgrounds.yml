@@ -25,13 +25,20 @@
 - name: list backgrounds
   shell:
     cmd: find {{ mint_repo_path }}/linux_mint_21/backgrounds/linuxmint-* -name '*.jpg'
-  register: linux_mint_backgrounds
+  register: linux_mint_background_paths
+
+- name: deduplicate backgrounds
+  set_fact:
+    linux_mint_backgrounds: "{{ dict(names | zip(paths)) }}"
+  vars:
+    paths: "{{ linux_mint_background_paths.stdout_lines }}"
+    names: "{{ paths | map('basename') | map('regex_replace', '\\.\\w+$', '') }}"
 
 - name: add backgrounds to gnome control center
   template:
     src: files/gnome-background-properties/wallpaper.xml.j2
     dest: /usr/share/gnome-background-properties/{{ background_name }}.xml
   vars:
-    background_name: "{{ item | basename | regex_replace('\\.\\w+$', '') }}"
-    background_path: "{{ item }}"
-  loop: "{{ linux_mint_backgrounds.stdout_lines }}"
+    background_name: "{{ item.key }}"
+    background_path: "{{ item.value }}"
+  loop: "{{ linux_mint_backgrounds | dict2items }}"

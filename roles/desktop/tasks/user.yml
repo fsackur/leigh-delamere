@@ -53,7 +53,7 @@
     name: "{{ primary_user }}"
     password: "{{ user_account[primary_user].password | password_hash('sha512', 'idempotentsalt') }}"
   no_log: true
-  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password') | length > 0)
   tags:
     - reset_password
     - never
@@ -75,7 +75,7 @@
   vars:
     passwd: "{{ user_account[primary_user].password }}"
     user_passwd_file: /home/{{ primary_user }}/.passwd-tpm
-  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password'))
+  when: (create_account.changed | default(False)) or (ansible_run_tags | select('eq', 'reset_password') | length > 0)
   tags:
     - reset_password
     - never
@@ -99,7 +99,7 @@
       - TimedLoginDelay=45
 
 - name: disable screen lock for {{ primary_user }}
-  include_tasks: set_dconf.yml
+  include_tasks: subtasks/set_dconf.yml
   vars:
     user: "{{ primary_user }}"
     dconf_settings: |
@@ -150,15 +150,12 @@
     user_passwd_file: /home/{{ primary_user }}/.passwd-tpm
 
 - block:
-    - include_tasks:
-        file: prompt_interactive_session.yml
+    - include_tasks: subtasks/prompt_interactive_session.yml
       vars:
         interactive_user: "{{ primary_user }}"
-
-    - when: not logged_in_interactively[primary_user]
-      fail:
-        msg: "Cannot enable gnome-keyring-unlock service: {{ primary_user }} is not logged in interactively."
-      ignore_errors: true
+        msg_not_logged_in: "Cannot enable gnome-keyring-unlock service: {{ primary_user }} is not logged in interactively"
+        pause_not_logged_in: false
+        ignore_not_logged_in: true
 
     - when: logged_in_interactively[primary_user]
       name: enable gnome-keyring-unlock service
@@ -168,10 +165,10 @@
           systemctl --user daemon-reload && \
           systemctl --user enable gnome-keyring-unlock
       register: enable_gnome_keyring_unlock
-      changed_when: enable_gnome_keyring_unlock.stderr
+      changed_when: enable_gnome_keyring_unlock.stderr != ""
       become_user: "{{ primary_user }}"
 
-- include_tasks: ../../common/install_selinux_policy.yml
+- include_tasks: "{{ role_path }}/../common/install_selinux_policy.yml"
   loop:
     - passwd-write-home
     - passwd-sudo

@@ -1,11 +1,4 @@
 ---
-- name: set renderer  # https://www.reddit.com/r/Fedora/comments/1h2tmjz/you_might_want_to_switch_gtks_renderer/
-  lineinfile:
-    path: /etc/environment
-    line: GSK_RENDERER=ngl
-    state: "{{ 'present' if ansible_facts.distribution_version == '41' else 'absent' }}"
-  when: ansible_facts.distribution == "Fedora"
-
 - name: install gnome accessories
   package:
     name:
@@ -33,10 +26,7 @@
     mode: "0755"
   tags: gnome_shell_extensions
 
-- include_tasks:
-    file: install_gnome_extensions.yml
-    apply:
-      tags: gnome_shell_extensions
+- include_tasks: subtasks/install_gnome_extensions.yml
   loop:
     - freddie
     - "{{ primary_user }}"
@@ -45,7 +35,7 @@
   tags: gnome_shell_extensions
 
 - name: enable extensions for {{ primary_user }}
-  include_tasks: set_dconf.yml
+  include_tasks: subtasks/set_dconf.yml
   vars:
     user: "{{ primary_user }}"
     dconf_settings: |
@@ -56,29 +46,29 @@
   # Here's the jinja, in case it breaks: "'{{ user_extensions[primary_user] | join(\"', '\") }}'"
 
 - name: configure extension settings for {{ primary_user }}
-  include_tasks: set_dconf.yml
+  include_tasks: subtasks/set_dconf.yml
   vars:
     user: "{{ primary_user }}"
     file: files/dconf/look-and-feel.conf
 
 - name: disable hot corners and dynamic workspaces
-  include_tasks: set_dconf.yml
+  include_tasks: subtasks/set_dconf.yml
   vars:
     user: "{{ primary_user }}"
     file: files/dconf/activities-pane.conf
 
-- include_tasks: subtasks/mint_backgrounds.yml
+- import_tasks: subtasks/mint_backgrounds.yml
   tags: mint_backgrounds
 
 - name: set wallpaper for freddie
-  include_tasks: set_dconf.yml
+  include_tasks: subtasks/set_dconf.yml
   vars:
     user: freddie
     file: files/dconf/wallpaper.conf.j2
     wallpaper_path: /usr/share/backgrounds/linux_mint_21/backgrounds/linuxmint-vanessa/hlightbulb_greece.jpg
 
 - name: set wallpaper for {{ primary_user }}
-  include_tasks: set_dconf.yml
+  include_tasks: subtasks/set_dconf.yml
   vars:
     user: "{{ primary_user }}"
     file: files/dconf/wallpaper.conf.j2

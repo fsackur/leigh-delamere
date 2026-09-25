@@ -20,7 +20,7 @@
     path: "{{ font_dir }}"
     state: directory
 
-- include_tasks: install_font.yml
+- include_tasks: subtasks/install_font.yml
   loop: "{{ fonts }}"
   loop_control:
     loop_var: font

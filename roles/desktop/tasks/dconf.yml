@@ -4,19 +4,9 @@
     name: dconf-editor
     state: present
 
-- name: ensure dconf text overlay is present
-  copy:
-    content: ""
-    force: false
-    dest: /home/{{ user_ }}/.config/dconf/user.txt
-    owner: "{{ user_ }}"
-    group: "{{ user_ }}"
-    mode: "0644"
-  vars:
-    user_: "{{ user | default(ansible_user) }}"
-
 - name: set dconf to use text file overlay over binary blob
   lineinfile:
     path: /etc/dconf/profile/user
+    regexp: "^(service-db:keyfile/user|user-db:user)$"
     line: service-db:keyfile/user
     insertbefore: BOF
