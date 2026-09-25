@@ -1,0 +1,37 @@
+---
+- set_fact:
+    mint_repo_path: /usr/share/backgrounds/linux_mint_wallpaper
+    mint_folders:
+      - linuxmint-vanessa
+      - linuxmint-vera
+      - linuxmint-victoria
+      - linuxmint-virginia
+
+- name: clone linux mint backgrounds
+  shell:
+    cmd: |
+      mkdir -p {{ mint_repo_path }}
+      cd {{ mint_repo_path }}
+      git init --initial-branch=main
+      git config core.sparseCheckout true
+      echo 'linux_mint_21/backgrounds/linuxmint-vanessa' >> .git/info/sparse-checkout
+      echo 'linux_mint_21/backgrounds/linuxmint-vera' >> .git/info/sparse-checkout
+      echo 'linux_mint_21/backgrounds/linuxmint-victoria' >> .git/info/sparse-checkout
+      echo 'linux_mint_21/backgrounds/linuxmint-virginia' >> .git/info/sparse-checkout
+      git remote add -f origin https://github.com/rt2yrru/linux_mint_wallpaper
+      git pull origin main
+    creates: "{{ mint_repo_path }}/linux_mint_21/backgrounds/linuxmint-virginia/zkaiyv_temple.jpg"
+
+- name: list backgrounds
+  shell:
+    cmd: find {{ mint_repo_path }}/linux_mint_21/backgrounds/linuxmint-* -name '*.jpg'
+  register: linux_mint_backgrounds
+
+- name: add backgrounds to gnome control center
+  template:
+    src: files/gnome-background-properties/wallpaper.xml.j2
+    dest: /usr/share/gnome-background-properties/{{ background_name }}.xml
+  vars:
+    background_name: "{{ item | basename | regex_replace('\\.\\w+$', '') }}"
+    background_path: "{{ item }}"
+  loop: "{{ linux_mint_backgrounds.stdout_lines }}"

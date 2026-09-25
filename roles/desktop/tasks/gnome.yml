@@ -67,24 +67,22 @@
     user: "{{ primary_user }}"
     file: files/dconf/activities-pane.conf
 
-- name: copy wallpapers
-  copy:
-    src: files/backgrounds/linuxmint-vanessa/
-    dest: /usr/share/backgrounds/linuxmint-vanessa/
+- include_tasks: subtasks/mint_backgrounds.yml
+  tags: mint_backgrounds
 
 - name: set wallpaper for freddie
   include_tasks: set_dconf.yml
   vars:
     user: freddie
     file: files/dconf/wallpaper.conf.j2
-    wallpaper_path: /usr/share/backgrounds/linuxmint-vanessa/hlightbulb_greece.jpg
+    wallpaper_path: /usr/share/backgrounds/linux_mint_21/backgrounds/linuxmint-vanessa/hlightbulb_greece.jpg
 
 - name: set wallpaper for {{ primary_user }}
   include_tasks: set_dconf.yml
   vars:
     user: "{{ primary_user }}"
     file: files/dconf/wallpaper.conf.j2
-    wallpaper_path: "{{ '/usr/share/backgrounds/linuxmint-vanessa/dhoefler_path.jpg' if primary_user == 'harriet' else '/usr/share/backgrounds/gnome/adwaita-l.jxl' }}"
+    wallpaper_path: "{{ '/usr/share/backgrounds/linux_mint_21/backgrounds/linuxmint-vanessa/dhoefler_path.jpg' if primary_user == 'harriet' else '/usr/share/backgrounds/gnome/adwaita-l.jxl' }}"
 
 - name: copy avatars
   copy:
