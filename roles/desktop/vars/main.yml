@@ -33,3 +33,13 @@ user_extensions:
   karen:
     - launch-new-instance@gnome-shell-extensions.gcampax.github.com
     - no-overview@fthx
+wallpapers:
+  freddie: /usr/share/backgrounds/linux_mint_wallpaper/linux_mint_21/backgrounds/linuxmint-vanessa/hlightbulb_greece.jpg
+  harriet: /usr/share/backgrounds/linux_mint_wallpaper/linux_mint_21/backgrounds/linuxmint-vanessa/dhoefler_path.jpg
+  karen: /usr/share/backgrounds/linux_mint_wallpaper/linux_mint_21/backgrounds/linuxmint-victoria/mmant_rowboat.jpg
+  default: /usr/share/backgrounds/gnome/morphogenesis-d.svg
+icons:
+  freddie: coffee-512x512.png
+  harriet: monkey-puzzle-512x512.png
+  karen: flower2.jpg
+  default: mountain-512x512.png

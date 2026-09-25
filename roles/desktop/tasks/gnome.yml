@@ -60,41 +60,48 @@
 - import_tasks: subtasks/mint_backgrounds.yml
   tags: mint_backgrounds
 
-- name: set wallpaper for freddie
-  include_tasks: subtasks/set_dconf.yml
-  vars:
-    user: freddie
-    file: files/dconf/wallpaper.conf.j2
-    wallpaper_path: /usr/share/backgrounds/linux_mint_21/backgrounds/linuxmint-vanessa/hlightbulb_greece.jpg
+- block:
+    - name: set wallpaper for {{ user }}
+      include_tasks: subtasks/set_dconf.yml
+      vars:
+        file: files/dconf/wallpaper.conf.j2
+        wallpaper_path: "{{ wallpapers[user] if wallpapers[user] is defined else wallpapers.default }}"
 
-- name: set wallpaper for {{ primary_user }}
-  include_tasks: subtasks/set_dconf.yml
-  vars:
-    user: "{{ primary_user }}"
-    file: files/dconf/wallpaper.conf.j2
-    wallpaper_path: "{{ '/usr/share/backgrounds/linux_mint_21/backgrounds/linuxmint-vanessa/dhoefler_path.jpg' if primary_user == 'harriet' else '/usr/share/backgrounds/gnome/adwaita-l.jxl' }}"
+    - name: copy avatar
+      copy:
+        src: files/icons/{{ icon }}
+        dest: /var/lib/AccountsService/icons/{{ user }}
+      vars:
+        icon: "{{ icons[user] if icons[user] is defined else icons.default }}"
 
-- name: copy avatars
-  copy:
-    src: files/icons/{{ item.src }}
-    dest: "{{ item.dest }}"
-  loop:
-    - src: coffee-512x512.png
-      dest: /var/lib/AccountsService/icons/freddie
-    - src: monkey-puzzle.png
-      dest: /usr/share/pixmaps/faces/
-    - src: monkey-puzzle-512x512.png
-      dest: /var/lib/AccountsService/icons/harriet
-    - src: mountain-512x512.png
-      dest: /var/lib/AccountsService/icons/admin
-
-- name: set avatar on login screen
-  when: primary_user == 'freddie' or primary_user == 'harriet'
-  template:
-    src: files/icons/AccountsService.ini.j2
-    dest: /var/lib/AccountsService/users/{{ primary_user }}
+    - name: set avatar on login screen
+      template:
+        src: files/icons/AccountsService.ini.j2
+        dest: /var/lib/AccountsService/users/{{ user }}
   vars:
     user: "{{ primary_user }}"
+
+- when: ansible_user != primary_user
+  block:
+    - name: set wallpaper for {{ user }}
+      include_tasks: subtasks/set_dconf.yml
+      vars:
+        file: files/dconf/wallpaper.conf.j2
+        wallpaper_path: "{{ wallpapers[user] if wallpapers[user] is defined else wallpapers.default }}"
+
+    - name: copy avatar
+      copy:
+        src: files/icons/{{ icon }}
+        dest: /var/lib/AccountsService/icons/{{ user }}
+      vars:
+        icon: "{{ icons[user] if icons[user] is defined else icons.default }}"
+
+    - name: set avatar on login screen
+      template:
+        src: files/icons/AccountsService.ini.j2
+        dest: /var/lib/AccountsService/users/{{ user }}
+  vars:
+    user: "{{ ansible_user }}"
 
 # Created with GDM Settings app
 # https://github.com/orgs/gdm-settings/discussions/87
