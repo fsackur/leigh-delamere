@@ -1,0 +1,25 @@
+---
+- set_fact:
+    swap_set_priority: "{{ swap_set_priority | default(swap_set_physical_priority) }}"
+
+- name: check priority for {{ swap_partition }}
+  shell:
+    cmd: |
+      swapon --show=PRIO,NAME | grep {{ swap_partition }} | awk '{print $1}'
+  changed_when: false
+  failed_when: false
+  register: swap_priority
+
+- when: (swap_priority.stdout | int) != swap_set_priority
+  block:
+    - name: swap off
+      when: swap_priority.stdout != ""
+      shell:
+        cmd: swapoff {{ swap_partition }}
+
+    - name: swap on
+      shell:
+        cmd: swapon -p {{ swap_set_priority }} {{ swap_partition }}
+
+- set_fact:
+    swap_set_priority: "{{ swap_set_priority - 1 }}"

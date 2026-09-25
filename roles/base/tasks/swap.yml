@@ -1,0 +1,32 @@
+---
+- set_fact:
+    swap_set_physical_priority: 50
+
+- name: install zswap-cli
+  package:
+    name: zswap-cli
+
+- name: copy zram conf
+  copy:
+    src: files/zram-generator.conf.d
+    dest: /usr/lib/
+
+- name: find swap partitions
+  shell:
+    cmd: lsblk -o PATH --noheadings --filter 'FSTYPE == "swap" && NAME !~ "zram"'
+  changed_when: false
+  register: swap_partitions
+
+- include_tasks: subtasks/set_swap.yml
+  loop: "{{ swap_partitions.stdout_lines }}"
+  loop_control:
+    loop_var: swap_partition
+
+- name: set vm sysctls
+  when: sysctl is defined
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_file: /etc/sysctl.d/90-ansible.conf
+    sysctl_set: true
+  loop: "{{ sysctl | dict2items }}"
