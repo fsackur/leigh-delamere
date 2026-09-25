@@ -60,7 +60,7 @@
 
 - name: accept tailscale routes
   shell:
-    cmd: tailscale set --accept-routes
+    cmd: tailscale set --accept-routes --exit-node-allow-lan-access
 
 - name: advertise tailscale routes
   when: tailscale_advertise_routes is defined
