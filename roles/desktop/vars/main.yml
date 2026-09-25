@@ -9,6 +9,9 @@ extensions:
     - name: User Themes
       id: user-theme@gnome-shell-extensions.gcampax.github.com
       package: gnome-shell-extension-user-theme
+    - name: App Indicator
+      id: appindicatorsupport@rgcjonas.gmail.com
+      package: gnome-shell-extension-appindicator
   non_packaged:
     - name: PaperWM
       id: paperwm@paperwm.github.com
@@ -25,6 +28,7 @@ user_extensions:
     - launch-new-instance@gnome-shell-extensions.gcampax.github.com
     - paperwm@paperwm.github.com
     - just-perfection-desktop@just-perfection
+    - appindicatorsupport@rgcjonas.gmail.com
   harriet:
     - launch-new-instance@gnome-shell-extensions.gcampax.github.com
     - dash-to-panel@jderose9.github.com
