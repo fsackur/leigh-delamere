@@ -15,30 +15,30 @@
     service_dir: /etc/proxmox-backup
 - debug: var=proxmox_backup
 
-# - name: add proxmox copr repo
-#   when: ansible_facts.distribution == 'Fedora'
-#   shell:
-#     cmd: dnf -y copr enable derenderkeks/proxmox-backup-client
-#     creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:derenderkeks:proxmox-backup-client.repo
+- name: add proxmox copr repo
+  when: ansible_facts.distribution == 'Fedora'
+  shell:
+    cmd: dnf -y copr enable derenderkeks/proxmox-backup-client
+    creates: /etc/yum.repos.d/_copr:copr.fedorainfracloud.org:derenderkeks:proxmox-backup-client.repo
 
-# - name: install proxmox backup client
-#   package:
-#     name: proxmox-backup-client
+- name: install proxmox backup client
+  package:
+    name: proxmox-backup-client
 
-# - name: create backup service directory
-#   file:
-#     path: "{{ service_dir }}"
-#     state: directory
-#     mode: 0755
+- name: create backup service directory
+  file:
+    path: "{{ service_dir }}"
+    state: directory
+    mode: 0755
 
-# - name: write backup api token
-#   copy:
-#     content: "{{ vault.backup[ansible_hostname].api_token }}"
-#     dest: "{{ service_dir }}/{{ proxmox_backup.passwd_file }}"
-#     owner: root
-#     group: root
-#     mode: "0600"
-#   no_log: true
+- name: write backup api token
+  copy:
+    content: "{{ vault.backup[ansible_hostname].api_token }}"
+    dest: "{{ service_dir }}/{{ proxmox_backup.passwd_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
 
 - name: generate backup client config
   lineinfile:
@@ -78,3 +78,9 @@
     enabled: true
     state: started
     daemon_reload: true
+
+- name: run manually
+  when: false
+  shell:
+    cmd: |
+      systemd-run -t --working-directory=/etc/proxmox-backup -p EnvironmentFile=/etc/proxmox-backup/proxmox-backup.env -p LoadCredential=proxmox-backup-passwd:/etc/proxmox-backup/proxmox-backup-passwd /etc/proxmox-backup/proxmox-backup.sh
