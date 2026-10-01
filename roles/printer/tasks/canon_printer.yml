@@ -1,0 +1,15 @@
+---
+- set_fact:
+    canon_printer:
+      mac_address: 58:cd:c9:4c:d5:a6
+      ip_address: "{{ ip_address }}"
+      serial_number: "{{ canon_printer.serial_number }}"
+      default_ssid: "{{ canon_printer.default_ssid }}"
+      default_ssid_password: "{{ canon_printer.default_ssid_password }}"
+      default_password: "{{ canon_printer.default_password }}"
+      model: TS3355
+      usb_uri: usb://Canon/TS3300%20series?serial=6F10E7&interface=1
+      tcp_uri: dnssd://Canon%20TS3300%20series._ipp._tcp.local/?uuid=00000000-0000-1000-8000-0018a26f10e7
+    installer_created_printer_name: DCPL3520CDW
+  vars:
+    ip_address: "192.168.1.105"  # dhcp reservation not set; YMMV

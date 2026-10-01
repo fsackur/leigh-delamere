@@ -3,7 +3,7 @@
     brother_printer:
       mac_address: 58:cd:c9:4c:d5:a6
       ip_address: "{{ ip_address }}"
-      default_password: 70Gmc%iR
+      default_password: "{{ brother_printer.default_password }}"
       model: DCP-L3520CDW
       usb_uri: "usb://Brother/DCP-L3520CDW%20series?serial=E82389F4N546650"  # discovered with /usr/lib/cups/backend/usb
       tcp_uri: "socket://{{ ip_address }}:9100"
@@ -11,7 +11,7 @@
   vars:
     ip_address: "10.7.7.166"
 
-- import_tasks: drivers.yml
+- import_tasks: brother_drivers.yml
   tags: drivers
 
 - name: remove printer created by installer
